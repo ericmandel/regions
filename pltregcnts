@@ -15,7 +15,7 @@ ${AWK:-awk} '
       }
     } else if( $1 == "----" ){
       if( NF == 12 ){
-        printf "funcnts%s avg_radius%s surf_bri%s 3\n", file, xlabel, ylabel
+        printf "regcnts%s avg_radius%s surf_bri%s 3\n", file, xlabel, ylabel
         mode = "data"
         next
       } else {
