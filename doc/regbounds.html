@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>Spatial Region Boundaries</title>
+</head>
+<body>
+
+<h2><a NAME="regbounds">RegBounds: Region Boundaries</a></h2>
+
+<h2>Summary</h2>
+Describes how spatial region boundaries are handled.
+
+<h2>Description</h2>
+
+The golden rule for spatial region filtering was first enunciated by
+Leon VanSpeybroeck in 1986:
+
+<p>
+<b>Each photon will be counted once, and no photon will be counted
+more than once</b>.
+
+<p>
+This means that we must be careful about boundary conditions.  For
+example, if a circle is contained in an annulus such that the inner
+radius of the annulus is the same as the radius of the circle, then
+photons on that boundary must always be assigned to one or the other
+region. That is, the number of photons in both regions must equal the
+sum of the number of photons in each region taken separately.
+
+With this in mind, the rules for determining whether a boundary image
+pixel or table row are assigned to a region are defined below.
+
+<h2>Image boundaries : radially-symmetric shapes (circle, annuli, ellipse)</h2>
+
+or image filtering, pixels whose center is inside the boundary are
+included.  This also applies non-radially-symmetric shapes.  When a
+pixel center is exactly on the boundary, the pixel assignment rule is:
+
+<ul>
+<li> the outer boundary of a symmetric shape does not include such pixels
+<li> the inner boundary of a symmetric shape (annulus) includes such pixels
+</ul>
+
+In this way, an annulus with radius from 0 to 1, centered exactly on a
+pixel, includes the pixel on which it is centered, but none of its
+neighbors.
+
+These rules ensure that when defining concentric shapes, no pixels are
+omitted between concentric regions and no pixels are claimed by two
+regions.  When applied to small symmetric shapes, the shape is less
+likely to be skewed, as would happen with non-radially-symmetric
+rules.  These rules differ from the rules for box-like shapes, which
+are more likely to be positioned adjacent to one another.
+
+<h2>Image Boundaries: non-radially symmetric shapes (polygons, boxes)</h2>
+
+For image filtering, pixels whose center is inside the boundary are
+included. This also applies radially-symmetric shapes.  When a pixel
+center is exactly on the boundary of a non-radially symmetric region,
+the pixel is included in the right or upper region, but not the left
+or lower region.  This ensures that geometrically adjoining regions
+touch but don't overlap.
+
+<p>
+<hr>
+Other pages of interest:
+<ul>
+<li>Regions User Programs:
+<ul>
+<li><a href="./regcnts.html">regcnts: count photons in specified regions</a>
+<li><a href="./regdisp.html">regdisp: display a region mask</a>
+</ul>
+<li><a href="./reglib.html">Regions Programming Interface</a>
+<ul>
+<li><a href="./reglib.html#intro">Intro to Regions Programming</a>
+<li> <a href="./reglib.html#openregions">OpenRegions: open a regions filter</a>
+<li><a href="./reglib.html#filterregions">FilterRegions: return an image mask of valid region segments</a>
+<li><a href="./reglib.html#closeregions">CloseRegions: close a regions filter</a>
+</ul>
+<li>Regions Image Filtering
+<ul>
+<li><a href="./regions.html">Spatial Regions</a>
+<li><a href="./regalgebra.html">Region Algebra</a>
+<li><a href="./regbounds.html">Region Boundaries</a>
+<li><a href="./regexamples.html">Region Examples</a>
+</ul>
+</ul> 
+
+<h5>Last updated: August 7, 2015</h5>
+
+</body>
+</html>

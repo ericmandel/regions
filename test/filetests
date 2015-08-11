@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+  echo $0 ifile1 ifile2 ...
+  exit 1
+fi
+
+hash fkeyprint 1>/dev/null 2>&1
+if [ $? = 0 ]; then
+  XEQ=ftools
+else
+  hash funimage 1>/dev/null 2>&1
+  if [ $? = 0 ]; then
+    XEQ=funtools
+  else
+    error "requires either ftools (fkeyprint) or funtools (fumimage)"
+  fi
+fi
+
+while [ x"$1" != x ]; do
+  # new file
+  IFILE="$1"
+  shift
+
+  # get image dimensions
+  case $XEQ in
+      ftools)
+	NAXIS1=`fkeyprint infile=${FTYPE}$IFILE'[events][bin '$BL']' keynam=NAXIS1 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
+	NAXIS2=`fkeyprint infile=${FTYPE}$IFILE'[events][bin '$BL']' keynam=NAXIS2 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
+	;;
+      funtools)
+	DIMS=`funimage ${FTYPE}$IFILE'[*,*,'$BL']' stdout bitpix=8 2>/dev/null | dd bs=80 count=10 2>/dev/null | sed -e 's/.\{80\}/&@/g' | tr '@' '\012' | egrep NAXIS'[1,2]' | sed 's# /.*##g;s# ##g'`
+	eval $DIMS
+	;;
+  esac
+
+  # get center x and y
+  X=`expr $NAXIS1 / 2`
+  Y=`expr $NAXIS2 / 2`
+
+  # test this file at the center of the image
+  echo "tregcnts -f2 $IFILE -x $X -y $Y < tregions.in"
+  ./tregcnts -f2 $IFILE -x $X -y $Y < tregions.in
+done
+

@@ -1,0 +1,16 @@
+#CMD	Old Region			New region
+#---	-----------------		---------------------
+EXACT	point(344.757501, 58.613187) # foo	point(344.757501, 58.613187) {"color" : "red", "type": "circle"}
+EXACT	polygon(344.885213, 58.546432, 344.629691, 58.546483, 344.757550, 58.679854) # source,include	polygon(344.885213, 58.546432, 344.629691, 58.546483, 344.757550, 58.679854) {"color" : "red"} # source,include
+EXACT	ellipse(344.757501, 58.613187, 3.999999', 2.666666', 0.000000) # source,include	ellipse(344.757501, 58.613187, 3.999999', 2.666666', 0.000000) {"color" : "red"} # source,include
+EXACT	box(344.757501, 58.613187, 7.999989', 7.999985', 0.000000) # source,include	box(344.757501, 58.613187, 7.999989', 7.999985', 0.000000) # source,include
+EXACT	circle(344.757501, 58.613187, 3.999999') # source,include	circle(344.757501, 58.613187, 3.999999') # source,include
+EXACT	point(342.991453, 59.374888) # background,include	point(342.991453, 59.374888) # background,include
+EXACT	ellipse(342.991453, 59.374888, 3.998604', 2.665833', 0.000000) # background,include	ellipse(342.991453, 59.374888, 3.998604', 2.665833', 0.000000) # background,include
+EXACT	box(342.991453, 59.374888, 7.997053', 7.997319', 0.000000) # background,include	box(342.991453, 59.374888, 7.997053', 7.997319', 0.000000) # background,include
+EXACT	circle(342.991453, 59.374888, 3.998604') # background,include	circle(342.991453, 59.374888, 3.998604') # background,include
+EXACT	circle(344.272261, 58.847928, 3.999876') # source,include	circle(344.272261, 58.847928, 3.999876') # source,include
+EXACT	-box(344.272261, 58.847928, 7.999702', 7.999704', 0.000000) # source,exclude,exclude	-box(344.272261, 58.847928, 7.999702', 7.999704', 0.000000) # source,exclude,exclude
+EXACT	ellipse(344.272261, 58.847928, 3.999876', 2.666589', 0.000000) # background,include	ellipse(344.272261, 58.847928, 3.999876', 2.666589', 0.000000) # background,include
+EXACT	-polygon(344.401763, 58.781657, 344.144527, 58.780744, 344.271377, 58.914591) # background,exclude,exclude	-polygon(344.401763, 58.781657, 344.144527, 58.780744, 344.271377, 58.914591) # background,exclude,exclude
+EXACT	point(344.272261, 58.847928) # source,include	point(344.272261, 58.847928) # source,include

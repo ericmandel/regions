@@ -1,0 +1,17 @@
+# Region file format: JS9 version 1.0
+physical
+point(507.0, 514.0) # foo
+polygon(477.0, 484.0, 537.0, 484.0, 507.0, 544.0) # source,include
+ellipse(507.0, 514.0, 30.0, 20.0, 0.0000) # source,include
+box(507.0, 514.0, 60.0, 60.0, 0.0000) # source,include
+circle(507.0, 514.0, 30.0) # source,include
+point(912.0, 862.0) # background,include
+ellipse(912.0, 862.0, 30.0, 20.0, 0.0000) # background,include
+box(912.0, 862.0, 60.0, 60.0, 0.0000) # background,include
+circle(912.0, 862.0, 30.0) # background,include
+text(544.0, 462.0, "This is a regions test") # background,include
+circle(620.0, 620.0, 30.0) # source,include
+-box(620.0, 620.0, 60.0, 60.0, 0.0000) # source,exclude,exclude
+ellipse(620.0, 620.0, 30.0, 20.0, 0.0000) # background,include
+-polygon(590.0, 590.0, 650.0, 590.0, 620.0, 650.0) # background,exclude,exclude
+point(620.0, 620.0) # source,include

@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE_NAME@
+Description: regions filtering library
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lregions @EXTRA_LIBS@ -lm
+Cflags: -I${includedir}

@@ -1,0 +1,4 @@
+#CMD	Old Region		New region
+#---	-----------------	---------------------
+EXACT	cir 512 512 1		cir 512 512 1
+SUM	cir 512 512 20		cir 512 512 0 20 n=10

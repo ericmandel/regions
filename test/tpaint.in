@@ -1,0 +1,9 @@
+#CMD	Old Region			New region
+#---	-----------------		---------------------
+EXACT	cir $X $Y 20; cir $X $Y 5	cir $X $Y 20; cir $X $Y 5
+EXACT	box $X $Y 10 20; cir $X $Y 5	box $X $Y 10 20;  cir $X $Y 5
+EXACT	ell $X $Y 10 20; cir $X $Y 5	ell $X $Y 10 20; ; cir $X $Y 5
+
+EXACT	cir $X $Y 20; -cir $X $Y 5; cir $X $Y 2	cir $X $Y 20; -cir $X $Y 5; cir $X $Y 2
+EXACT	box $X $Y 10 20; -cir $X $Y 5; cir $X $Y 2	box $X $Y 10 20;  -cir $X $Y 5; cir $X $Y 2
+EXACT	ell $X $Y 10 20; -cir $X $Y 5; cir $X $Y 2	ell $X $Y 10 20; -cir $X $Y 5; cir $X $Y 2

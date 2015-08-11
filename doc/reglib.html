@@ -1,0 +1,277 @@
+<html>
+<head>
+<title>Regions Programming</title>
+</head>
+<body>
+
+<h2><a name="reglib">Reglib: the Regions Programming Interface</a></h2>
+
+<h2>Summary</h2>
+
+This document contains a description of the programming interface for spatial
+region filtering of FITS images.
+
+<h2><a name="intro">Introduction to the Regions Programming Interface</h2></a>
+
+To create a regions application, you need to include the regions.h
+definitions file in your code:
+<pre>
+  #include &lt;regions.h&gt;
+</pre>
+You then call regions subroutines and functions to filter data using
+DS9/JS9/Funtools region specifiers.
+
+The <a href="./reglib.html#openregions">OpenRegions()</a>
+function is used to open a regions specification for filtering:
+<pre>
+  Regions reg = OpenRegions(char *cards, char *region_string, char *mode);
+</pre>
+where cards is a string containing the FITS cards for the current image,
+and region_string is the region specifier. The mode string is reserved for
+future use and can be set to NULL;
+
+<p>
+Once a region specification has been opened, you can call
+<a href="./reglib.html#filterregions">FilterRegions()</a>
+to return an array of region mask segments for the specified image section:
+<pre>
+  got =  FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block, RegionsMask *mask, int *nreg);
+</pre>
+<p>
+When all processing is done, can call
+<a href="./reglib.html#closeregions">CloseRegions()</a>
+to release all region resources:
+<pre>
+  CloseRegions(reg);
+</pre>
+
+<p>
+Your program must be linked against the standard 
+<a href="http://heasarc.gsfc.nasa.gov/docs/software/fitsio/" target="_blank">cfitsio</a> FITS-access
+library, the libregions.a library, and the math library. The following
+libraries also might be required on your system:
+<pre>
+  -ldl  # for linking dynamic objects
+</pre>
+<p>
+Thus, on a Linux system using gcc, you would generally use the
+following link line:
+<pre>
+  gcc -o foo foo.c -lregions -L[path_to_cfitsio] -lcfitsio -ldl -lm
+</pre>
+Note that after configure has built a Makefile on your platform, the
+required "extra" libraries (aside from -lm, which always is required)
+are specified in that file's EXTRA_LIBS variable;
+<pre>
+  egrep ^EXTRA_LIBS Makefile
+  EXTRA_LIBS =	 -L/Users/foo/cfitsio -lcfitsio -ldl -lm
+</pre>
+So in the above case, the link line would be:
+<pre>
+  gcc -o foo foo.c -lregions -L/Users/foo/cfitsio -lcfitsio -ldl -lm
+</pre>
+This information is contained in the regions.pc file.
+
+<h2><a name="openregions">OpenRegions - open a regions filter</a></h2>
+<b>
+<pre>
+  #include &lt;regions.h&gt;
+
+  Regions OpenRegions(char *cards, char *regions, char *mode);
+</pre>
+</b>
+
+<p>
+The <b>OpenRegions()</b> routine opens a
+<a href="./regions.html">spatial region specifier</a>
+for filtering. The first argument is a string containing the FITS header cards.
+These cards are used to gather WCS and other information about the file whose
+image data will be filtered. If you are using the
+<a href="http://heasarc.gsfc.nasa.gov/docs/software/fitsio/" target="_blank">cfitsio</a>
+library, the card string can be retrieved with the 
+<b>fits_convert_hdr2str()</b> call. A NULL can safely be passed if
+there is no WCS information associated with the data.
+
+<p>
+The second argument is the
+<a href="./regions.html">spatial region specifier</a>. This can be one 
+or more regions:
+<pre>
+  circle(512,512,10); -box(400,400,20,40,15)
+
+  fk5;circle(345.2926,58.879817,151.99998");circle(344.86479,59.014261,223.99998")
+</pre>
+or it can be an include file containing regions:
+<pre>
+  @ds9.reg
+</pre>
+
+<p>
+The third argument is a string containing mode specifiers. At the moment,
+mode is only used for debugging and should be set to NULL.
+
+<p>
+The <b>OpenRegions()</b> call analyzes the input spatial region specification
+and generates a spatial region filter that is then compiled on the fly.
+Ordinarily, the filter is compiled and linked to produce a slave
+program, which is then started up as slave process of your application.
+The <b>FilterRegions()</b> call sends section information
+to the slave program, which returns a region mask, i.e. an array of
+valid region segments to be used by your application.
+
+<p>
+Although not often used, it is worth noting that the <b>REGIONS_PTYPE</b>
+environment variable offer options on how to build the region filter:
+<dl>
+<dt>process or p (the default)
+<dd>The filter is compiled and linked against the regions library (which
+must therefore be accessible in the original install directory) to produce
+a slave program. 
+
+<dt>dynamic or d (not much faster than process)
+<dd>The filter is compiled and linked against the regions library
+to produce a dynamic shared object, which is loaded into the regions
+program and executed as a subroutine. Extensive testing has shown
+that, contrary to expectations, this method is no faster than using a
+slave process.
+
+<dt>contained or c (fool-proof but slower to compile)
+<dd>The filter and all supporting region code is compiled and linked
+without reference to an external regions library to produce a slave
+program.  This method takes slightly more time to compile the full region
+filtering code. It is used by programs such as DS9, which do not have
+access to the regions library.
+</dl>
+
+<p>
+By default, <b>process</b> is generally used for all compilers.
+However, the filter-building algorithm will check for required
+external files and will use <b>contained</b> if any are missing.
+
+<p>
+The returned <b>Regions</b> handle is an opaque handle that will be used in
+subsequent region library calls.
+
+<h2><a name="filterregions">FilterRegions - return an image mask of valid region segments</a></h2>
+<b>
+<pre>
+  #include &lt;regions.h&gt;
+
+  int FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block, RegionsMask *mask, int *nreg);
+</pre>
+</b>
+
+<p>
+The <b>FilterRegions()</b> routine sends an image section to the filter slave
+process, and retrieves a region mask, i.e. an array of valid region
+segments that can used by your application to filter the image data.
+
+<p>
+The first argument is the Region handle returned
+by <b>OpenRegions()</b>.  The next 5 arguments specify the image
+section in which to calculate the mask. The section value should match
+the section of the image contained in your image data array, at the
+specified block factor. However, in keeping with FITS conventions, the
+section limits are one-indexed, so that the whole image at block 1 is
+specified by: 1, xdim, 1, ydim, 1.
+
+<p>
+The slave process (or dynamic object call) returns the region mask in
+the seventh (mask) argument. The mask an array of RegionMask structs, each
+element of which has the form:
+<pre>
+  typedef struct regmasks {
+    int region;
+    int y;
+    int xstart, xstop;
+  } *RegionsMask, RegionsMaskRec;
+</pre>
+The y, xstart, and xstop elements are one-indexed, and xstop is the last
+valid element (not the first invalid element). This mask should be freed
+when no longer needed.
+
+<p>
+If not specified as NULL, the eighth argument (nreg) returns the
+number of include regions in the mask. This is useful for allocating
+arrays of the correct size when processing regions individually.
+
+<p>
+Finally, the <b>FilterRegions()</b> function returns the number
+of segments in the mask, so that they can be accessed in this way:
+<pre>
+  int i, nmask, nreg;
+  RegionsMask mask;
+  nmask = FilterRegions(reg, x0, x1, y0, y1, block, &mask, &nreg);
+  for(i=0; i&lt;nmask; i++){
+    fprintf(stdout, "#%d: region=%d y=%d, x=%d,%d\n", 
+    i, mask[i].region, mask[i].y, mask[i].xstart, mask[i].xstop);
+  }
+</pre>
+
+<p>
+As a more complete example, consider the case where dbuf contains the
+image data for the specified section. After calling <b>FilterRegions()</b>,
+area and cts arrays can be allocated based on the number of include
+regions. The counts and area in each region then can be calculated in this way:
+<pre>
+  double *cnts;
+  int i, j, nmask, nreg, *area;
+  nmask = FilterRegions(reg, x0, x1, y0, y1, block, &mask, &nreg);
+  cnts = (double *)calloc(nreg, sizeof(double));
+  area = (int *)calloc(nreg, sizeof(int));
+  for(i=0; i&lt;nmask; i++){
+    area[masks[i].region-1] += masks[i].xstop - masks[i].xstart + 1;
+    for(j=masks[i].xstart-1; j&lt;=masks[i].xstop-1; j++){
+      cnts[masks[i].region-1] += dbuf[j];
+    }
+  }
+</pre>
+
+<h2><a name="closeregions">CloseRegions - release region filter resources</a></h2>
+<b>
+<pre>
+  #include &lt;regions.h&gt;
+
+  int CloseRegions(Regions reg);
+</pre>
+</b>
+
+<p>
+The <b>FilterRegions()</b> routine releases all resources associated
+with this spatial region filter. If the processing <b>ptype</b>
+is <b>process</b> or <b>contained</b>, (i.e. a slave process is used
+to perform the filtering), it will also close the slave process. In
+this case, the returned status will be the completion status of the
+slave processes.  If the processing <b>ptype</b> is <b>dynamic</b>,
+the dynamic object is released and the return status is from the
+dlclose() call.
+
+<p>
+<hr>
+Other pages of interest:
+<ul>
+<li>Regions User Programs:
+<ul>
+<li><a href="./regcnts.html">regcnts: count photons in specified regions</a>
+<li><a href="./regdisp.html">regdisp: display a region mask</a>
+</ul>
+<li><a href="./reglib.html">Regions Programming Interface</a>
+<ul>
+<li><a href="./reglib.html#intro">Intro to Regions Programming</a>
+<li> <a href="./reglib.html#openregions">OpenRegions: open a regions filter</a>
+<li><a href="./reglib.html#filterregions">FilterRegions: return an image mask of valid region segments</a>
+<li><a href="./reglib.html#closeregions">CloseRegions: close a regions filter</a>
+</ul>
+<li>Regions Image Filtering
+<ul>
+<li><a href="./regions.html">Spatial Regions</a>
+<li><a href="./regalgebra.html">Region Algebra</a>
+<li><a href="./regbounds.html">Region Boundaries</a>
+<li><a href="./regexamples.html">Region Examples</a>
+</ul>
+</ul> 
+
+<h5>Last updated: August 9, 2015</h5>
+
+</body>
+</html>

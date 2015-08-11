@@ -1,0 +1,16 @@
+#CMD	Old Region			New region
+#---	-----------------		---------------------
+EXACT	point(22:59:01.800, +58:36:47.475) # foo	point(22:59:01.800, +58:36:47.475) {"color" : "red", "type": "circle"}
+EXACT	polygon(22:59:32.451, +58:32:47.155, 22:58:31.126, +58:32:47.338, 22:59:01.812, +58:40:47.475) # source,include	polygon(22:59:32.451, +58:32:47.155, 22:58:31.126, +58:32:47.338, 22:59:01.812, +58:40:47.475) {"color" : "red"} # source,include
+EXACT	ellipse(22:59:01.800, +58:36:47.475, 3.999999', 2.666666', 0.000000) # source,include	ellipse(22:59:01.800, +58:36:47.475, 3.999999', 2.666666', 0.000000) {"color" : "red"} # source,include
+EXACT	box(22:59:01.800, +58:36:47.475, 7.999989', 7.999985', 0.000000) # source,include	box(22:59:01.800, +58:36:47.475, 7.999989', 7.999985', 0.000000) # source,include
+EXACT	circle(22:59:01.800, +58:36:47.475, 3.999999') # source,include	circle(22:59:01.800, +58:36:47.475, 3.999999') # source,include
+EXACT	point(22:51:57.949, +59:22:29.597) # background,include	point(22:51:57.949, +59:22:29.597) # background,include
+EXACT	ellipse(22:51:57.949, +59:22:29.597, 3.998604', 2.665833', 0.000000) # background,include	ellipse(22:51:57.949, +59:22:29.597, 3.998604', 2.665833', 0.000000) # background,include
+EXACT	box(22:51:57.949, +59:22:29.597, 7.997053', 7.997319', 0.000000) # background,include	box(22:51:57.949, +59:22:29.597, 7.997053', 7.997319', 0.000000) # background,include
+EXACT	circle(22:51:57.949, +59:22:29.597, 3.998604') # background,include	circle(22:51:57.949, +59:22:29.597, 3.998604') # background,include
+EXACT	circle(22:57:05.343, +58:50:52.541, 3.999876') # source,include	circle(22:57:05.343, +58:50:52.541, 3.999876') # source,include
+EXACT	-box(22:57:05.343, +58:50:52.541, 7.999702', 7.999704', 0.000000) # source,exclude,exclude	-box(22:57:05.343, +58:50:52.541, 7.999702', 7.999704', 0.000000) # source,exclude,exclude
+EXACT	ellipse(22:57:05.343, +58:50:52.541, 3.999876', 2.666589', 0.000000) # background,include	ellipse(22:57:05.343, +58:50:52.541, 3.999876', 2.666589', 0.000000) # background,include
+EXACT	-polygon(22:57:36.423, +58:46:53.964, 22:56:34.686, +58:46:50.678, 22:57:05.131, +58:54:52.528) # background,exclude,exclude	-polygon(22:57:36.423, +58:46:53.964, 22:56:34.686, +58:46:50.678, 22:57:05.131, +58:54:52.528) # background,exclude,exclude
+EXACT	point(22:57:05.343, +58:50:52.541) # source,include	point(22:57:05.343, +58:50:52.541) # source,include

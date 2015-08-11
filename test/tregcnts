@@ -1,0 +1,300 @@
+#!/bin/sh
+# set -x
+
+# make funcnts floating physical-to-image coords behave the same as cfitsio
+FILTER_CFITSIO=true
+export FILTER_CFITSIO
+
+PLATFORM=`uname`
+VERBOSE=0
+SW="-r"
+X=504
+Y=512
+OPROG=funcnts
+NPROG=../regcnts
+DDIR=.
+OFILE=${DDIR}/snr.ev.gz
+NFILE=${DDIR}/snr.ev.gz
+
+if [ -r /usr/ucb/echo ]; then
+  ECHO=/usr/ucb/echo
+else
+  ECHO=echo
+fi
+
+FAWK='{tpix = $1};END{print tpix}'
+
+while [ x"$1" != x ]; do
+  case $1 in
+  -bkg)
+    # -b background arg (region or const value)
+    shift
+    BKG="$1"
+    shift
+    continue;;
+  -coord)
+    # -c <coordsys> prepend coord system to region
+    shift
+    C="$1;"
+    shift
+    continue;;
+  -ex)
+    # exclude region instead of including
+    FIELD=`${OPROG} ${OFILE} "field" | awk "$SAWK" | awk "$FAWK"`
+    $ECHO "FIELD: $FIELD"
+    $ECHO " "
+    M="-"
+    shift
+    continue;;
+  -f1)
+    # first file to use
+    shift
+    OFILE=$1
+    shift
+    continue;;
+  -f2)
+    # second file to use
+    shift
+    OFILE=$1
+    NFILE=$1
+    shift
+    continue;;
+  -p1)
+    # first program to use
+    shift
+    NPROG=$1
+    shift
+    continue;;
+  -p2)
+    # second program to use
+    shift
+    OPROG=$1
+    shift
+    continue;;
+  -save)
+    shift
+    SAVE=1
+    continue;;
+  -src)
+    shift
+    CHK="src"
+    continue;;
+  -sw)
+    # regcnts switches
+    shift
+    SW=$1
+    shift
+    continue;;
+  -v1)
+    # verbosity level 1
+    VERBOSE=1
+    shift
+    continue;;
+  -v2)
+    # verbosity level 2
+    VERBOSE=2
+    shift
+    continue;;
+  -x)
+    # new x coordinate
+    shift
+    X=$1
+    shift
+    continue;;
+  -y)
+    # new y coordinate
+    shift
+    Y=$1
+    shift
+    continue;;
+  *)
+    shift
+    continue;;
+  esac
+done
+
+# check background-subtracted results or raw source results?
+if [ x"$CHK" = xsrc ]; then
+  EAWK='start==1&&NF>0{tpix += $2; tarea +=$3; print $0};/^---- ------------ ---------$/{start=1}END{print tpix,tarea}'
+  SAWK='start==1&&NF>0{tpix += $2; tarea +=$3};/^---- ------------ ---------$/{start=1}END{print tpix,tarea}'
+else
+  EAWK='start==1{if(NF>=8){tpix += $2; tarea +=$6; print $1,$2,$4,$6}else{start=2}};$1=="----"&&NF>=8{start=1}END{print tpix,tarea}'
+  SAWK='start==1{if(NF>=8){tpix += $2; tarea +=$6}else{start=2}};$1=="----"&&NF>=8{start=1}END{print tpix,tarea}'
+fi
+
+# perform variable substitution on bkg
+if [ x"$BKG" != x ]; then
+  eval "BKG=\"$BKG\""
+fi
+
+X2=`$ECHO "$X + 10" | bc`
+Y2=`$ECHO "$Y + 10" | bc`
+X3=`$ECHO "$X + 20" | bc`
+Y3=$Y
+X4=`$ECHO "$X + 10" | bc`
+Y4=`$ECHO "$Y - 10" | bc`
+
+$ECHO "OPROG="${OPROG} "OFILE="${OFILE}
+$ECHO "NPROG="${NPROG} "NFILE="${NFILE}
+
+IFS="	"
+while read ARG1 ARG2 ARG3; do
+  if [ x"$ARG1" = x ]; then
+    continue
+  fi
+  if [ x`$ECHO $ARG1 | sed 's/^#.*/YES/g'` = x"YES" ]; then
+    continue
+  fi
+  CMD=$ARG1
+  eval "ARG2=\"${C}$ARG2\""
+  eval "ARG3=\"${C}$ARG3\""
+  if [ x$CMD = xZIEXACT ]; then
+    if [ x$FILTER_PAINT = xtrue ]; then
+      continue
+    else
+      CMD=EXACT
+    fi
+  fi
+  if [ x$CMD = xZEXACT ]; then
+    if [ x$FILTER_PAINT = xtrue ]; then
+      CMD=SUM
+    else
+      CMD=EXACT
+    fi
+  fi
+  case $CMD in
+  OPROG)
+    OPROG=$ARG2
+    ;;
+  NPROG)
+    NPROG=$ARG2
+    ;;
+  OFILE)
+    OFILE=$ARG2
+    ;;
+  NFILE)
+    NFILE=$ARG2
+    ;;
+  EXCLUDE)
+    FIELD=`$OPROG ${OFILE} "field" | awk "$SAWK" | awk "$FAWK"`
+    $ECHO "FIELD: $FIELD"
+    $ECHO " "
+    M="-"
+    ;;
+  EXIT)
+    exit
+    ;;
+  EXACT)
+    $ECHO "${M}EXACT: $ARG2 ... $ARG3"
+    if [ x"$DOEXACT" = xYES ]; then
+      CMP=yes
+      XPROG=""
+      $OPROG ${SW} ${OFILE} "$ARG2" $BKG > regcnts1.log 2>err.log
+      if test $? -ne 0; then
+        CMP=no
+        XPROG="$OPROG"
+        cat err.log
+      fi
+      $NPROG ${SW} ${NFILE} "${M}$ARG3" $BKG > regcnts2.log
+      if test $? -ne 0; then
+        CMP=no
+        XPROG="${XPROG:-''}${XPROG:+' '}$NPROG"
+      fi
+    else
+      CMP=yes
+      XPROG=""
+      $OPROG ${SW} ${OFILE} "$ARG2" $BKG | \
+	  tee regcnts1.log | awk $EAWK > regvals1.log 2>err.log
+      if test $? -ne 0; then
+        CMP=no
+        XPROG="$OPROG"
+        cat err.log
+      fi
+      $NPROG ${SW} ${NFILE} "${M}$ARG3" $BKG | \
+	  tee regcnts2.log | awk $EAWK >regvals2.log
+      if test $? -ne 0; then
+        CMP=no
+        XPROG="${XPROG:-''}${XPROG:+' '}$NPROG"
+      fi
+    fi
+   if [ x"$CMP" = xyes ]; then
+      if [ x$M = x ]; then
+        diff regvals1.log regvals2.log
+      else
+        V1=`cat regcnts1.log | awk $FAWK`
+        V2=`cat regcnts2.log | awk $FAWK`
+        V2=`$ECHO "$FIELD-$V2" | bc`
+        if [ $V1 != $V2 ]; then
+            $ECHO "V1=$V1 V2=$V2"
+        fi
+      fi
+    fi
+    $ECHO " "
+    ;;
+  REV)
+    $ECHO "${M}REV: $ARG2 ... $ARG3"
+    $OPROG ${SW} ${OFILE} "$ARG2" $BKG | awk $EAWK > regcnts1.log
+    if test $? -ne 0; then
+      $ECHO "skipping $NPROG due to error"
+    else
+      $NPROG ${SW} ${NFILE} "${M}$ARG3" $BKG | awk $EAWK > regcnts2.log
+      if [ x$M = x ]; then
+        awk 'NF==3{print $0}' < regcnts1.log | sort -r | \
+	    awk '{print $2,$3}' > regvals1.log
+        awk 'NF==3{print $2,$3}' < regcnts2.log > regvals2.log
+        diff regvals1.log regvals2.log
+      else
+        V1=`cat regcnts1.log | awk $FAWK`
+        V2=`cat regcnts2.log | awk $FAWK`
+        V2=`$ECHO "$FIELD-$V2" | bc`
+        if [ $V1 != $V2 ]; then
+            $ECHO "V1=$V1 V2=$V2"
+        fi
+      fi
+    fi 
+    $ECHO " "
+    ;;
+  SUM)
+    $ECHO "${M}SUM:   $ARG2 ... $ARG3"
+    $OPROG ${SW} ${OFILE} "$ARG2" $BKG | \
+	tee regcnts1.log | awk $SAWK > regvals1.log
+    if test $? -ne 0; then
+      $ECHO "skipping $NPROG due to error"
+    else
+      $NPROG ${SW} ${NFILE} "${M}$ARG3" $BKG | \
+	  tee regcnts2.log | awk $SAWK > regvals2.log
+      if [ x$M = x ]; then
+        diff regvals1.log regvals2.log
+      else
+        V1=`cat regcnts1.log | awk $FAWK`
+        V2=`cat regcnts2.log | awk $FAWK`
+        V2=`$ECHO "$FIELD-$V2" | bc`
+        if [ $V1 != $V2 ]; then
+            $ECHO "V1=$V1 V2=$V2"
+        fi
+      fi
+    fi
+    $ECHO " "
+    ;;
+  *)
+    $ECHO "ERROR: unknown command: $CMD"
+    exit 1
+    ;;
+  esac
+  # show log for new regcnts
+  if [ $VERBOSE -ge 1 ]; then
+    $ECHO "***** regcnts2.log *****"
+    cat regcnts2.log
+  fi
+  # show log for old funcnts
+  if [ $VERBOSE -ge 2 ]; then
+    $ECHO "***** regcnts1.log *****"
+    cat regcnts1.log
+  fi
+  rm -f err.log
+done
+
+if [ x$SAVE != x1 ]; then
+  rm -f regcnts1.log regcnts2.log regvals1.log regvals2.log
+fi
+

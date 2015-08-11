@@ -1,0 +1,286 @@
+<html>
+<head>
+<title>Regions Program regdisp: display region mask</title>
+</head>
+<body>
+
+<h2><a NAME="regdisp">regdisp - display one or more region masks</a></h2>
+
+<b>
+<pre>
+regdisp [switches] fitsfile [reg1 reg2 ...]
+</pre>
+</b>
+
+<p>
+<pre>
+  -h		# display this help
+  -l		# display list of segments
+  -m		# display mask (default)
+  -s		# image section as 'x0 x1 y0 x1 block' (def: whole image)
+</b>
+</pre>
+
+<p>
+The <b>regdisp</b> program displays a region mask corresponding to the
+specified region(s). The first argument to the program specifies the
+FITS input image or binary table.  The remaining optional arguments
+are the regions to display.  If no region is specified, the program
+will read regions from stdin (one line per region).
+
+<p>
+By default, each region is displayed as a mask in which ASCII
+characters starting at '1' are used to display the region ids:
+<pre>
+  $ regdisp snr.fits "box 512 512 3 4 6 8 9 12 12 15 45"
+  regions: box 512 512 3 4 6 8 9 12 12 15 45
+  .......................
+  .......................
+  ..........3............
+  .........333...........
+  ........33233..........
+  .......3322233.........
+  ......332222233........
+  .....33222112233.......
+  ....3322211112233......
+  ...33222111.112233.....
+  ..33222111...112233....
+  ...332211.....112233...
+  ....332211...11122233..
+  .....332211.11122233...
+  ......3322111122233....
+  .......33221122233.....
+  ........332222233......
+  .........3322233.......
+  ..........33233........
+  ...........333.........
+  ............3..........
+  .......................
+  .......................
+  LL corner: 501,501
+  UR corner: 523,523
+
+  $ regdisp snr.fits "bpanda(512 512 30 300 3 3 4 9 12 3)"
+  regions: bpanda(512 512 30 300 3 3 4 9 12 3)
+  .............
+  .............
+  ..633333333..
+  ..663333333..
+  ..652222223..
+  ..654111123..
+  ..654...12...
+  ..654........
+  ..654........
+  ..654........
+  ..687777.....
+  ..987777.....
+  ..9888888....
+  ..9999999....
+  .............
+  .............
+  LL corner: 506,505
+  UR corner: 518,520
+</pre>
+If the <b>-l</b> switch is specified, the mask is displayed as a list
+of 1-indexed region segments:
+<pre>
+  $ regdisp -l snr.fits "box 512 512 3 4 6 8 9 12 12 15 45"
+  regions: box 512 512 3 4 6 8 9 12 12 15 45
+  #0: region=3 y=503, x=513,513
+  #1: region=3 y=504, x=512,514
+  #2: region=3 y=505, x=511,512
+  #3: region=2 y=505, x=513,513
+  #4: region=3 y=505, x=514,515
+  #5: region=3 y=506, x=510,511
+  #6: region=2 y=506, x=512,514
+  #7: region=3 y=506, x=515,516
+  #8: region=3 y=507, x=509,510
+  #9: region=2 y=507, x=511,515
+  #10: region=3 y=507, x=516,517
+  #11: region=3 y=508, x=508,509
+  #12: region=2 y=508, x=510,511
+  #13: region=1 y=508, x=512,513
+  #14: region=2 y=508, x=514,516
+  #15: region=3 y=508, x=517,518
+  #16: region=3 y=509, x=507,508
+  #17: region=2 y=509, x=509,510
+  #18: region=1 y=509, x=511,514
+  #19: region=2 y=509, x=515,517
+  #20: region=3 y=509, x=518,519
+  #21: region=3 y=510, x=506,507
+  #22: region=2 y=510, x=508,509
+  #23: region=1 y=510, x=510,511
+  #24: region=1 y=510, x=513,515
+  #25: region=2 y=510, x=516,518
+  #26: region=3 y=510, x=519,520
+  #27: region=3 y=511, x=505,506
+  #28: region=2 y=511, x=507,508
+  #29: region=1 y=511, x=509,510
+  #30: region=1 y=511, x=514,516
+  #31: region=2 y=511, x=517,519
+  #32: region=3 y=511, x=520,521
+  #33: region=3 y=512, x=504,505
+  #34: region=2 y=512, x=506,507
+  #35: region=1 y=512, x=508,509
+  #36: region=1 y=512, x=515,516
+  #37: region=2 y=512, x=517,518
+  #38: region=3 y=512, x=519,520
+  #39: region=3 y=513, x=503,504
+  #40: region=2 y=513, x=505,507
+  #41: region=1 y=513, x=508,510
+  #42: region=1 y=513, x=514,515
+  #43: region=2 y=513, x=516,517
+  #44: region=3 y=513, x=518,519
+  #45: region=3 y=514, x=504,505
+  #46: region=2 y=514, x=506,508
+  #47: region=1 y=514, x=509,511
+  #48: region=1 y=514, x=513,514
+  #49: region=2 y=514, x=515,516
+  #50: region=3 y=514, x=517,518
+  #51: region=3 y=515, x=505,506
+  #52: region=2 y=515, x=507,509
+  #53: region=1 y=515, x=510,513
+  #54: region=2 y=515, x=514,515
+  #55: region=3 y=515, x=516,517
+  #56: region=3 y=516, x=506,507
+  #57: region=2 y=516, x=508,510
+  #58: region=1 y=516, x=511,512
+  #59: region=2 y=516, x=513,514
+  #60: region=3 y=516, x=515,516
+  #61: region=3 y=517, x=507,508
+  #62: region=2 y=517, x=509,513
+  #63: region=3 y=517, x=514,515
+  #64: region=3 y=518, x=508,509
+  #65: region=2 y=518, x=510,512
+  #66: region=3 y=518, x=513,514
+  #67: region=3 y=519, x=509,510
+  #68: region=2 y=519, x=511,511
+  #69: region=3 y=519, x=512,513
+  #70: region=3 y=520, x=510,512
+  #71: region=3 y=521, x=511,511
+
+  $ regdisp -l snr.fits "bpanda(512 512 30 300 3 3 4 9 12 3)" 
+  regions: bpanda(512 512 30 300 3 3 4 9 12 3)
+  #0: region=9 y=507, x=508,514
+  #1: region=9 y=508, x=508,508
+  #2: region=8 y=508, x=509,514
+  #3: region=9 y=509, x=508,508
+  #4: region=8 y=509, x=509,509
+  #5: region=7 y=509, x=510,513
+  #6: region=6 y=510, x=508,508
+  #7: region=8 y=510, x=509,509
+  #8: region=7 y=510, x=510,513
+  #9: region=6 y=511, x=508,508
+  #10: region=5 y=511, x=509,509
+  #11: region=4 y=511, x=510,510
+  #12: region=6 y=512, x=508,508
+  #13: region=5 y=512, x=509,509
+  #14: region=4 y=512, x=510,510
+  #15: region=6 y=513, x=508,508
+  #16: region=5 y=513, x=509,509
+  #17: region=4 y=513, x=510,510
+  #18: region=6 y=514, x=508,508
+  #19: region=5 y=514, x=509,509
+  #20: region=4 y=514, x=510,510
+  #21: region=1 y=514, x=514,514
+  #22: region=2 y=514, x=515,515
+  #23: region=6 y=515, x=508,508
+  #24: region=5 y=515, x=509,509
+  #25: region=4 y=515, x=510,510
+  #26: region=1 y=515, x=511,514
+  #27: region=2 y=515, x=515,515
+  #28: region=3 y=515, x=516,516
+  #29: region=6 y=516, x=508,508
+  #30: region=5 y=516, x=509,509
+  #31: region=2 y=516, x=510,515
+  #32: region=3 y=516, x=516,516
+  #33: region=6 y=517, x=508,509
+  #34: region=3 y=517, x=510,516
+  #35: region=6 y=518, x=508,508
+  #36: region=3 y=518, x=509,516
+</pre>
+As shown above, the first 9 regions are labeled "1"-"9".  The next
+region is labeled ':', followed by ';' as per the order of the ASCII
+table. The region symbols wrap back to '0' after reaching the last
+valid ASCII character '~'.
+
+<p>
+The -s switch restricts the region mask to a section of the
+image. This is useful in cases where the mask covers a large image
+area and you want to view a smaller section more easily. For example,
+an excluded region in whole image field can be viewed this way:
+<pre>
+  $ regdisp -s "505 515 505 515 1" snr.fits "field; -circle(510,510,5)"
+  regions: field; -circle(510,510,5)
+  11111111111
+  111.....111
+  11.......11
+  1.........1
+  1.........1
+  1.........1
+  1.........1
+  1.........1
+  11.......11
+  111.....111
+  11111111111
+  LL corner: 505,505
+  UR corner: 515,515
+
+  $ regions: field; -circle(510,510,5)
+  #0: region=1 y=1, x=1,11
+  #1: region=1 y=2, x=1,3
+  #2: region=1 y=2, x=9,11
+  #3: region=1 y=3, x=1,2
+  #4: region=1 y=3, x=10,11
+  #5: region=1 y=4, x=1,1
+  #6: region=1 y=4, x=11,11
+  #7: region=1 y=5, x=1,1
+  #8: region=1 y=5, x=11,11
+  #9: region=1 y=6, x=1,1
+  #10: region=1 y=6, x=11,11
+  #11: region=1 y=7, x=1,1
+  #12: region=1 y=7, x=11,11
+  #13: region=1 y=8, x=1,1
+  #14: region=1 y=8, x=11,11
+  #15: region=1 y=9, x=1,2
+  #16: region=1 y=9, x=10,11
+  #17: region=1 y=10, x=1,3
+  #18: region=1 y=10, x=9,11
+  #19: region=1 y=11, x=1,11
+</pre>
+<p>
+Please note that <b>regdisp</b> displays image masks, even though
+it can be run directly on FITS binary tables. This means that image
+filtering is performed, i.e., a pixel is inside a region if its center
+is inside the region. For more information about boundary issues,
+see the discussion of <a href="./regbounds.html">Region Boundaries</a>.
+
+<p>
+<hr>
+Other pages of interest:
+<ul>
+<li>Regions User Programs:
+<ul>
+<li><a href="./regcnts.html">regcnts: count photons in specified regions</a>
+<li><a href="./regdisp.html">regdisp: display a region mask</a>
+</ul>
+<li><a href="./reglib.html">Regions Programming Interface</a>
+<ul>
+<li><a href="./reglib.html#intro">Intro to Regions Programming</a>
+<li> <a href="./reglib.html#openregions">OpenRegions: open a regions filter</a>
+<li><a href="./reglib.html#filterregions">FilterRegions: return an image mask of valid region segments</a>
+<li><a href="./reglib.html#closeregions">CloseRegions: close a regions filter</a>
+</ul>
+<li>Regions Image Filtering
+<ul>
+<li><a href="./regions.html">Spatial Regions</a>
+<li><a href="./regalgebra.html">Region Algebra</a>
+<li><a href="./regbounds.html">Region Boundaries</a>
+<li><a href="./regexamples.html">Region Examples</a>
+</ul>
+</ul> 
+
+<h5>Last updated: August 7, 2015</h5>
+
+</body>
+</html>

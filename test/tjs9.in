@@ -1,0 +1,16 @@
+#CMD	Old Region			New region
+#---	-----------------		---------------------
+EXACT	point(507.0, 514.0)	point(507.0, 514.0) {"color" : "red", "type": "circle"}
+EXACT	polygon(477.0, 484.0, 537.0, 484.0, 507.0, 544.0) # source,include	polygon(477.0, 484.0, 537.0, 484.0, 507.0, 544.0)  {"color" : "red"} # source,include
+EXACT	ellipse(507.0, 514.0, 30.0, 20.0, 0.0000) # source,include	ellipse(507.0, 514.0, 30.0, 20.0, 0.0000) # source,include
+EXACT	box(507.0, 514.0, 60.0, 60.0, 0.0000) # source,include	box(507.0, 514.0, 60.0, 60.0, 0.0000) # source,include
+EXACT	circle(507.0, 514.0, 30.0) # source,include	circle(507.0, 514.0, 30.0)  {"color" : "red", "radius": 10} # source,include
+EXACT	point(912.0, 862.0) # background,include	point(912.0, 862.0) # background,include
+EXACT	ellipse(912.0, 862.0, 30.0, 20.0, 0.0000) # background,include	ellipse(912.0, 862.0, 30.0, 20.0, 0.0000) # background,include
+EXACT	box(912.0, 862.0, 60.0, 60.0, 0.0000) # background,include	box(912.0, 862.0, 60.0, 60.0, 0.0000) # background,include
+EXACT	circle(912.0, 862.0, 30.0) # background,include	circle(912.0, 862.0, 30.0) # background,include
+EXACT	circle(620.0, 620.0, 30.0) # source,include	circle(620.0, 620.0, 30.0) # source,include
+EXACT	-box(620.0, 620.0, 60.0, 60.0, 0.0000) # source,exclude,exclude	-box(620.0, 620.0, 60.0, 60.0, 0.0000) # source,exclude,exclude
+EXACT	ellipse(620.0, 620.0, 30.0, 20.0, 0.0000) # background,include	ellipse(620.0, 620.0, 30.0, 20.0, 0.0000) # background,include
+EXACT	-polygon(590.0, 590.0, 650.0, 590.0, 620.0, 650.0) # background,exclude,exclude	-polygon(590.0, 590.0, 650.0, 590.0, 620.0, 650.0) # background,exclude,exclude
+EXACT	point(620.0, 620.0) # source,include	point(620.0, 620.0) # source,include

@@ -1,0 +1,48 @@
+#!/bin/sh
+# set -x
+
+ARGS=$*
+
+echo "************** testing regcnts **************"
+echo " "
+tregcnts $ARGS < tregions.in
+
+echo "************** testing regcnts with contstant bkg **************"
+echo " "
+tregcnts -bkg 2.718 $ARGS < tregions.in
+
+echo "************** testing regcnts with region bkg **************"
+echo " "
+tregcnts -bkg 'annulus($X,$Y,100,120)' $ARGS < tregions.in
+
+echo "************** testing regcnts with boxes, ellipses  **************"
+echo " "
+tregcnts $ARGS < tboxell.in
+
+echo "************** testing regcnts with summing **************"
+echo " "
+tregcnts $ARGS < tsum.in
+
+echo "************** testing regcnts on @files **************"
+echo " "
+tregcnts $ARGS < tfile.in
+
+echo "************** testing regcnts in paint mode **************"
+echo " "
+env FILTER_PAINT=true REGIONS_PAINT=true tregcnts $ARGS < tpaint.in
+
+echo "************** testing regcnts with blocked data **********"
+echo " "
+tregcnts -f2 snr2.fits.gz $ARGS < tregions.in
+
+echo "************** testing regcnts on js9 regions **************"
+echo " "
+tregcnts $ARGS < tjs9.in
+
+echo "************** testing regcnts on js9 degree regions **************"
+echo " "
+tregcnts -coord fk4 $ARGS < tjs9deg.in
+
+echo "************** testing regcnts on js9 hmsdms regions **************"
+echo " "
+tregcnts -coord fk4 $ARGS < tjs9hms.in

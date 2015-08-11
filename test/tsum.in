@@ -1,0 +1,14 @@
+#CMD	Old Region			New region
+#---	-----------------		---------------------
+SUM	ann $X $Y 0 5 10 15 20		(ann $X $Y 0 5 10 15 20)
+SUM	ann $X $Y 0 5 10 15 20		(ann $X $Y 0 20 n=4 # color=red\\n)
+
+SUM	ann $X $Y 0 20 n=4		(ell $X $Y 0 0 20 20 n=4 # color=red\\n)
+SUM	ann $X $Y 0 5 10 15 20		ell $X $Y 0 0 20 20 n=4
+SUM	ann $X $Y 5 20 n=3		ell $X $Y 5 5 10 10 15 15 20 20 # color=red\\n
+SUM	ann $X $Y 0 20 n=4		(cir $X $Y 0 20 n=4)
+SUM	ann $X $Y 0 20 n=4		(cir $X $Y 0 5 10 15 20 # color=red\\n)
+SUM	ann $X $Y 0 20 n=4		pan $X $Y 0 360 1 0 20 4
+
+SUM	pan $X $Y 35 80 3 0 20 4	pan $X $Y 35 80 3 0 20 4 # color=red\\n
+

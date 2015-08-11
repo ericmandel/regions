@@ -1,0 +1,240 @@
+<html>
+<head>
+<title>Region Algebra</title>
+</head>
+<body>
+
+<h2><a NAME="regalgebra">RegAlgebra: Boolean Algebra on Spatial Regions</a></h2>
+
+<h2>Summary</h2>
+
+This document describes the boolean arithmetic defined for 
+region expressions.
+
+<h2>Description</h2>
+
+When defining a region, several shapes can be  combined using boolean
+operations.  The boolean operators are (in order of precedence):
+<pre>
+  Symbol        Operator                Associativity
+  ------        --------                -------------
+  !             not                     right to left
+  &             and                     left to right
+  ^             exclusive or            left to right
+  |             inclusive or            left to right
+
+</pre>
+For example,  to  create a mask  consisting  of a large  circle with a
+smaller  box   removed,  one  can  use   the   <b>and</b> and <b>not</b>
+operators:
+<pre>
+  $ regdisp snr.ev "circle(512 512 5) & \!circle(512,512,2)"
+  regions: circle(512 512 5) & !circle(512,512,2)
+  .............
+  .............
+  ....11111....
+  ...1111111...
+  ..111111111..
+  ..111...111..
+  ..111...111..
+  ..111...111..
+  ..111111111..
+  ...1111111...
+  ....11111....
+  .............
+  .............
+</pre>
+</pre>
+A three-quarter circle can be defined as:
+<pre>
+  $ regdisp snr.ev "circle(512,512,5) & \!pie(512,512,270,360)"
+  regions: circle(512,512,5) & !pie(512,512,270,360)
+  .............
+  .............
+  ....11111....
+  ...1111111...
+  ..111111111..
+  ..111111111..
+  ..11111......
+  ..11111......
+  ..11111......
+  ...1111......
+  ....111......
+  .............
+  .............
+</pre>
+Two non-intersecting ellipses can be made into the same region:
+<pre>
+  $ regdisp snr.ev "ellipse(522,522,5,10,90) | ellipse(512,512,10,5,0)"
+  regions: ellipse(522,522,5,10,90) | ellipse(512,512,10,5,0)
+  .................................
+  .................................
+  ................11111111111......
+  ..............111111111111111....
+  ............1111111111111111111..
+  ............1111111111111111111..
+  ............1111111111111111111..
+  ............1111111111111111111..
+  ............1111111111111111111..
+  ..............111111111111111....
+  ................11111111111......
+  .................................
+  ......11111111111................
+  ....111111111111111..............
+  ..1111111111111111111............
+  ..1111111111111111111............
+  ..1111111111111111111............
+  ..1111111111111111111............
+  ..1111111111111111111............
+  ....111111111111111..............
+  ......11111111111................
+  .................................
+  .................................
+</pre>
+You can use several boolean operations in a single region expression,
+to create arbitrarily complex regions.  With the important exception
+below, you can apply the operators in any order, using parentheses if
+necessary to override the natural precedence of the operators.
+
+<p>
+NB: Using a panda shape is always much more efficient than explicitly
+specifying "pie & annulus", due to the ability of panda to place a
+limit on the number of pixels checked in the pie shape.  If you are
+going to specify the intersection of pie and annulus, use panda
+instead.
+
+<p>
+As described in "help regexamples", the <b>PIE</b> slice goes to the
+edge of the field. To limit its scope, <b>PIE</b> usually is is
+combined with other shapes, such as circles and annuli, using boolean
+operations.  In this context, it is worth noting that that there is a
+difference between <b>-PIE</b> and <b>&!PIE</b>. The former is a
+global exclude of all pixels in the <b>PIE</b> slice, while the latter
+is a local excludes of pixels affecting only the region(s) with which
+the <b>PIE</b> is combined.  For example, the following region uses
+<b>&!PIE</b> as a local exclude of a single circle. Two other circles
+are also defined and are unaffected by the local exclude:
+<pre>
+  $ cat foo
+  circle(10,20,5)
+  circle(20,20,5)&!pie(20,20,60,120)&!pie(20,20,240,300)
+  circle(30,20,5)
+  $ regdisp snr.fits @foo
+  regions: @foo
+  .................................
+  .................................
+  ....11111...............33333....
+  ...1111111...22...22...3333333...
+  ..111111111.222...222.333333333..
+  ..111111111.2222.2222.333333333..
+  ..111111111.222222222.333333333..
+  ..111111111.2222.2222.333333333..
+  ..111111111.222...222.333333333..
+  ...1111111...22...22...3333333...
+  ....11111...............33333....
+  .................................
+  .................................
+</pre>
+Note that the two other regions are not affected by the <b>&!PIE</b>,
+which only affects the circle with which it is combined.
+
+<p>
+On the other hand, a <b>-PIE</b> is an global exclude that does
+affect other regions with which it overlaps:
+<pre>
+  # two small circles inside a larger one
+  # no excludes
+  $ cat foo
+  circle(20,15,3)
+  circle(20,25,3)
+  circle(20,20,10)
+  $ regdisp snr.fits @foo
+  regions: @foo
+  .......................
+  .......................
+  .......333333333.......
+  ......33333333333......
+  ....333332222233333....
+  ....333332222233333....
+  ...33333322222333333...
+  ..3333333222223333333..
+  ..3333333222223333333..
+  ..3333333333333333333..
+  ..3333333333333333333..
+  ..3333333333333333333..
+  ..3333333333333333333..
+  ..3333333333333333333..
+  ..3333333111113333333..
+  ..3333333111113333333..
+  ...33333311111333333...
+  ....333331111133333....
+  ....333331111133333....
+  ......33333333333......
+  .......333333333.......
+  .......................
+  .......................
+
+  # two small circles inside a larger one
+  # with global pie excludes
+  $ cat foo
+  circle(20,15,3)
+  circle(20,25,3)
+  circle(20,20,10)
+  -pie(20,20,60,120)
+  -pie(20,20,240,300)
+  $ regdisp snr.fits @foo
+  regions: @foo
+  .......................
+  .......................
+  ......3.........3......
+  ....333.........333....
+  ....3333.......3333....
+  ...333333.....333333...
+  ..3333333.....3333333..
+  ..33333332...23333333..
+  ..33333333...33333333..
+  ..333333333.333333333..
+  ..3333333333333333333..
+  ..333333333.333333333..
+  ..33333333...33333333..
+  ..33333331...13333333..
+  ..3333333.....3333333..
+  ...333333.....333333...
+  ....3333.......3333....
+  ....333.........333....
+  ......3.........3......
+  .......................
+  .......................
+</pre>
+The two smaller circles are entirely contained within the two exclude
+<b>PIE</b> slices and therefore are excluded from the region.
+
+<p>
+<hr>
+Other pages of interest:
+<ul>
+<li>Regions User Programs:
+<ul>
+<li><a href="./regcnts.html">regcnts: count photons in specified regions</a>
+<li><a href="./regdisp.html">regdisp: display a region mask</a>
+</ul>
+<li><a href="./reglib.html">Regions Programming Interface</a>
+<ul>
+<li><a href="./reglib.html#intro">Intro to Regions Programming</a>
+<li> <a href="./reglib.html#openregions">OpenRegions: open a regions filter</a>
+<li><a href="./reglib.html#filterregions">FilterRegions: return an image mask of valid region segments</a>
+<li><a href="./reglib.html#closeregions">CloseRegions: close a regions filter</a>
+</ul>
+<li>Regions Image Filtering
+<ul>
+<li><a href="./regions.html">Spatial Regions</a>
+<li><a href="./regalgebra.html">Region Algebra</a>
+<li><a href="./regbounds.html">Region Boundaries</a>
+<li><a href="./regexamples.html">Region Examples</a>
+</ul>
+</ul> 
+
+<h5>Last updated: August 7, 2015</h5>
+
+</body>
+</html>

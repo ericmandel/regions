@@ -1,0 +1,61 @@
+#!/bin/sh
+set -x
+rm -rf ./config.cache
+
+if [ x"$1" = x ]; then
+  name=`uname -n`
+else
+  if [ x"$1" = x"--" ]; then
+    name=`uname -n`
+  else
+    name="$1"
+  fi
+  shift
+fi
+
+PRODFLAGS="-O2"
+DEVFLAGS="-g -W -Wall -Wno-implicit-int"
+LDFLAGS="-g"
+export LDFLAGS
+
+CF="--config-cache"
+
+echo "configure for: " $name
+case $name in
+  saord*)
+  ./configure 	$CF						\
+		--prefix=/soft/saord				\
+		--with-cfitsio=/proj/rd/linux64			\
+      		CC=gcc CFLAGS="$PRODFLAGS"			\
+ 		$*
+  ;;
+
+  bokhara*)
+  ./configure 	$CF						\
+		--prefix=$HOME					\
+		--with-cfitsio=/proj/rd/linux64			\
+  		CC=gcc CFLAGS="$DEVFLAGS"		\
+ 		$*
+  ;;
+
+  baba*)
+  ./configure 	$CF						\
+		--prefix=$HOME					\
+		--with-cfitsio=$HOME/soft/cfitsio		\
+		CC=cc CFLAGS="$DEVFLAGS" 		\
+		$*
+  ;;
+
+  luke*|han*)
+  ./configure 	$CF						\
+		--prefix=/pool14/eric				\
+		--with-cfitsio=/proj/rd/solaris			\
+  		CC=gcc CFLAGS="$DEVFLAGS"		\
+ 		$*
+  ;;
+
+  *)
+  ./configure 	$CF $*
+  ;;
+
+esac
