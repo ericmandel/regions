@@ -25,11 +25,11 @@ while [ x"$1" != x ]; do
   # get image dimensions
   case $XEQ in
       ftools)
-	NAXIS1=`fkeyprint infile=${FTYPE}$IFILE'[events][bin '$BL']' keynam=NAXIS1 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
-	NAXIS2=`fkeyprint infile=${FTYPE}$IFILE'[events][bin '$BL']' keynam=NAXIS2 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
+	NAXIS1=`fkeyprint infile=$IFILE'[events][bin '$BL']' keynam=NAXIS1 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
+	NAXIS2=`fkeyprint infile=$IFILE'[events][bin '$BL']' keynam=NAXIS2 | egrep = | awk -F= '{print $2}' | awk -F/ '{print $1}' | sed 's/^  *//g;s/  *$//g'`
 	;;
       funtools)
-	DIMS=`funimage ${FTYPE}$IFILE'[*,*,'$BL']' stdout bitpix=8 2>/dev/null | dd bs=80 count=10 2>/dev/null | sed -e 's/.\{80\}/&@/g' | tr '@' '\012' | egrep NAXIS'[1,2]' | sed 's# /.*##g;s# ##g'`
+	DIMS=`funimage $IFILE'[*,*,'$BL']' stdout bitpix=8 2>/dev/null | dd bs=80 count=10 2>/dev/null | sed -e 's/.\{80\}/&@/g' | tr '@' '\012' | egrep NAXIS'[1,2]' | sed 's# /.*##g;s# ##g'`
 	eval $DIMS
 	;;
   esac
