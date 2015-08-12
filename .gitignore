@@ -14,6 +14,9 @@ config.status
 config.log
 config.cache
 snr.fits
+regcnts
+regdisp
+cimtest
 .DS_Store
 !wcs/Makefile
 a.out.dSYM/
