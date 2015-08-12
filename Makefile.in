@@ -167,7 +167,7 @@ DOC =		./doc
 
 PROGS =		regcnts regdisp
 
-SCRIPTS =	pltregcnts
+SCRIPTS =	pltregcnts.sh regcnts.sh
 
 DS9TOOLS =	regions.ds9
 

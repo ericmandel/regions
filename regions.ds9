@@ -13,7 +13,8 @@ help Regions Overview
 Regions in DS9
 
 The tasks in this section of the Analysis menu utilize the Regions
-program 'regcnts'.
+program 'regcnts'. Regcnts differs from the old funcnts program in that it
+utilizes the cfitsio FITS library instead of the defunct funtools library.
 
 1. Radial Profile Plot: run regcnts and pass results to the DS9 plotter.
 Both source and background regions can be specified.
@@ -33,26 +34,26 @@ cases, results are presented in pixels. Aside from the units, the
 results should be identical to the file-based results.
 
 For more sophisticated analysis, please consider using the underlying
-Regions tasks directly.
+regcnts task directly.
 
 endhelp
 
 Radial Profile Plot (annulus regions; options: none)
 *
 menu
- regcnts -rG "$filename" "$regions(source,,)" "$regions(background,,)" |& pltregcnts |& cat | $plot(stdin)
+ regcnts.sh -rG "$filename" "$regions(source,,)" "$regions(background,,)" |& pltregcnts.sh |& cat | $plot(stdin)
 
 Counts in Regions (any regions; options: none)
 *
 menu
- regcnts "$filename" "$regions(source,,)" "$regions(background,,)" |& cat | $text
+ regcnts.sh "$filename" "$regions(source,,)" "$regions(background,,)" |& cat | $text
 
 ---
 
 Radial Profile Plot in Pixels using DS9's Internal Image Data (annulus regions)
 *
 menu
-$data |  regcnts -prG stdin "$regions(source,,)" "$regions(background,,)" | pltregcnts |& cat | $plot(stdin)
+$data |  regcnts -prG stdin "$regions(source,,)" "$regions(background,,)" | pltregcnts.sh |& cat | $plot(stdin)
 
 Counts in Regions in Pixels using DS9's Internal Image Data (any regions)
 *
