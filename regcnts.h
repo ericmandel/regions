@@ -46,6 +46,9 @@
 
 /* options record */
 typedef struct optsRec {
+  int bin;
+  int bktype;
+  int c;
   int dobkgderr;
   int dodata;
   int dog;
@@ -54,8 +57,6 @@ typedef struct optsRec {
   int doradang;
   int dosum;
   int dozero;
-  int bktype;
-  int c;
 } *Opts, OptsRec;
 
 /* data record (src and bkg) */

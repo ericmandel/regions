@@ -16,6 +16,9 @@ void regcntsDisplayHeader(Opts opts, Data src, Data bkg, Res res){
   /* display source header information */
   fprintf(stdout, "# source\n");
   fprintf(stdout, "#   data_file:\t\t%s\n", src->name);
+  if( opts->bin != 1 ){
+    fprintf(stdout, "#   auto_block:\t\t%d\n", opts->bin);
+  }
   if( src->dpp > 0.0 ){
     fprintf(stdout, "#   arcsec/pixel:\t%g\n", src->dpp*ASEC_DEG);
   }

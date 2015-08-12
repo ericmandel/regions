@@ -15,6 +15,7 @@ void regcntsUsage (char *fname){
   fprintf(stderr, "usage: %s [switches] sname [sreg] [bname breg|breg|bcnts]\n",
 	 fname);
   fprintf(stderr, "optional switches:\n");
+  fprintf(stderr, "  -b [n]\t# bin factor for binary tables (make in-memory image smaller)\n");
   fprintf(stderr, "  -g\t\t# output using nice g format\n");
   fprintf(stderr, "  -G\t\t# output using %%.14g format (maximum precision)\n");
   fprintf(stderr, "  -h\t\t# display this help\n");
@@ -42,7 +43,8 @@ void regcntsInitAlloc(Opts *opts, Data *src, Data *bkg, Res *res){
   *opts = xcalloc(1, sizeof(OptsRec));
   (*opts)->dobkgderr = 1;
   (*opts)->bktype = BKG_VAL;
-  (*opts)->c=' ';
+  (*opts)->c = ' ';
+  (*opts)->bin = 1;
   *src = xcalloc(1, sizeof(DataRec));
   (*src)->type = SRC;
   *bkg = xcalloc(1, sizeof(DataRec));
@@ -58,8 +60,11 @@ void regcntsParseArgs(int argc, char **argv,
   int args;
   char *s;
   /* process switch arguments */
-  while ((c = getopt(argc, argv, "gGhmprstz1")) != -1){
+  while ((c = getopt(argc, argv, "b:gGhmprstz1")) != -1){
     switch(c){
+    case 'b':
+      opts->bin = atoi(optarg);
+      break;
     case 'g':
       opts->dog = 1;
       break;
@@ -156,7 +161,8 @@ void regcntsGetData(Opts opts, Data d){
     break;
   default:
     // image from table
-    nfptr = filterTableToImage(d->fptr, NULL, NULL, NULL, NULL, 1, &status);
+    nfptr = filterTableToImage(d->fptr, 
+			       NULL, NULL, NULL, NULL, opts->bin, &status);
     regcntsErrchk(status);
     // get cards as a string
     getHeaderToString(nfptr, &d->cards, &ncard, &status);
