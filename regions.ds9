@@ -14,7 +14,7 @@ Regions in DS9
 
 The tasks in this section of the Analysis menu utilize the Regions
 program 'regcnts'. Regcnts differs from the old funcnts program in that it
-utilizes the cfitsio FITS library instead of the defunct funtools library.
+is based on the cfitsio FITS library instead of the defunct funtools library.
 
 1. Radial Profile Plot: run regcnts and pass results to the DS9 plotter.
 Both source and background regions can be specified.
