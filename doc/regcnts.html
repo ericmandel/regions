@@ -14,6 +14,7 @@ regcnts  [switches] &lt;source_file&gt; [source_region] [bkgd_file] [bkgd_region
 
 <p>
 <pre>
+  -b [n]        # bin factor for binary tables (make in-memory image smaller)
   -g            # output using nice g format
   -G            # output using %.14g format (maximum precision)
   -m            # match individual source and bkgd regions
@@ -367,15 +368,33 @@ columns rather than spaces and line-feed will be inserted between
 tables.
 
 <p>
-Finally, please note that <b>regcnts</b> is an image program, even
+It is important to note that <b>regcnts</b> is an image program, even
 though it can be run directly on FITS binary tables. This means that
 image filtering (where a pixel is inside a region if its center is
 inside the region) is applied to table rows, ensuring that the same
 results are obtained regardless of whether a table or the equivalent
 binned image is used. As a result, the number of counts found
 using <b>regcnts</b> can differ from the number of events found using
-CFITSIO row-filter syntax.  For more information about boundary issues,
+cfitsio row-filter syntax.  For more information about boundary issues,
 see the discussion of <a href="./regbounds.html">Region Boundaries</a>.
+
+<p>
+Finally, <b>regcnts</b> works on FITS binary tables by asking the
+underlying cfitsio library to generate an in-memory FITS image.
+For some X-ray missions (e.g. XMM), the image dimensions of the data are huge
+(approx. 50k x 50K for XMM EPN). Trying to generate an in-memory image of that
+magnitude generally will hang the program as your computer swaps itself into
+oblivion. To avoid this problem, either utilize the cfitsio
+<a href="http://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/node104.html">binning specifier</a> on the command line, or use the <b>-b</b> switch to tell
+<b>regcnts</b> how to bin the image:
+<pre>
+  $ regcnts data/pn_201_clean.fits'[bin 32]'
+</pre>
+or:
+<pre>
+  $ regcnts -b data/pn_201_clean.fits
+</pre>
+Some day available memory will be infinite ... but not today.
 
 <p>
 <hr>
