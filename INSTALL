@@ -145,7 +145,7 @@ The simplest way to compile this package is:
      ./configure CFLAGS="-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wall -g"
 
   2. Type `make' to compile the package. This will create the libregions.a
-     library and the Regions utility programs (funcnts, fundisp, etc.)
+     library and the Regions utility programs (regcnts, regdisp)
 
   4. Type "make install" to install Regions libraries and binaries in
      standard places.  You'll need write permission on the installation

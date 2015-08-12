@@ -16,7 +16,7 @@
 #endif
 
 /* avoid use of system -- its not secure */
-/* but funtools cannot use launch for the MinGW platform because the stdfiles
+/* but we cannot use launch for the MinGW platform because the stdfiles
    support is missing in the launch_spawnvp() implementation of launch */
 #ifndef USE_LAUNCH
 #define USE_LAUNCH 1
