@@ -1,5 +1,8 @@
 	The regions filtering library and associated programs
 
+HTML documentation, available in the docs directory, is viewable
+[here](http://js9.si.edu/regions/reghelp.html).
+
 In astronomical data analysis, it often is useful to select spatial
 regions of an image for detailed processing. The regions library
 provides support for filtering FITS images and binary tables using
