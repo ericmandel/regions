@@ -52,6 +52,7 @@ static void wcseqm();
 static void wcsioset();
 void wcsrotset();
 char wcschar();
+char *uppercase();
 
 /* set up a WCS structure from a FITS image header lhstring bytes long 
  * for a specified WCS name */
