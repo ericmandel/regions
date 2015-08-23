@@ -162,5 +162,5 @@ See INSTALL for installation instructions, but it's the standard GNU build
     make install		                # install it
     make clean		                        # clean up
 
-Regions is distributed under the terms of The MIT License.
+The Regions package is distributed under the terms of The MIT License.
 
