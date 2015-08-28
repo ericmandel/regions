@@ -204,7 +204,7 @@ regdisp:	regdisp.o regcntsSubs.o libregions.a
 		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $+ $(EXTRA_LIBS)
 
 cimtest:	cimtest.o libregions.a
-		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $? $(EXTRA_LIBS)
+		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $+ $(EXTRA_LIBS)
 
 regprog_c.o:	regprog_c.c
 		$(CC) $(CPPFLAGS) $(CFLAGS) -c $? \
