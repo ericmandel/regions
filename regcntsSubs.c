@@ -313,7 +313,7 @@ void regcntsCountsInRegions(Data d){
   int lasty=-1;
 #ifdef USE_CFITSIO
   int status = 0;
-  long fpixel[2];
+  long fpixel[4];
 #endif
   char *cbuf;
   short *sbuf;
@@ -384,6 +384,8 @@ void regcntsCountsInRegions(Data d){
 #ifdef USE_CFITSIO
 	fpixel[0] = 1;
 	fpixel[1] = y;
+	fpixel[2] = 1;
+	fpixel[3] = 1;
 	fits_read_pix(d->fptr, TDOUBLE, fpixel, d->x1, 0, dbuf, 0, &status);
 	regcntsErrchk(status);
 #elif USE_FUNTOOLS
