@@ -75,7 +75,7 @@ void imstat(void *buf, int idim1, int idim2, int bitpix){
       cbuf = (char *)buf;
       sum += cbuf[ii];
       if (cbuf[ii] < minval) minval = cbuf[ii];  /* find min and  */
-      if (cbuf[ii] > maxval) maxval = dbuf[ii];  /* max values    */
+      if (cbuf[ii] > maxval) maxval = cbuf[ii];  /* max values    */
       break;
     case 16:
       sbuf = (short *)buf;
