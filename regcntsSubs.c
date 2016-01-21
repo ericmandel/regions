@@ -362,13 +362,15 @@ void regcntsCountsInRegions(Data d){
       case -32:
 	fbuf = (float *)d->data;
 	for(j=d->masks[i].xstart-1; j<=d->masks[i].xstop-1; j++){
-	  d->cnts[d->masks[i].region-1] += fbuf[yoff+j];
+	  d->cnts[d->masks[i].region-1] +=
+	    (isnan(fbuf[yoff+j]) ? 0 : fbuf[yoff+j]);
 	}
 	break;
       case -64:
 	dbuf = (double *)d->data;
 	for(j=d->masks[i].xstart-1; j<=d->masks[i].xstop-1; j++){
-	  d->cnts[d->masks[i].region-1] += dbuf[yoff+j];
+	  d->cnts[d->masks[i].region-1] +=
+	    (isnan(dbuf[yoff+j]) ? 0 : dbuf[yoff+j]);
 	}
 	break;
       default:
@@ -398,7 +400,7 @@ void regcntsCountsInRegions(Data d){
       d->area[d->masks[i].region-1] += 
 	d->masks[i].xstop - d->masks[i].xstart + 1;
       for(j=d->masks[i].xstart-1; j<=d->masks[i].xstop-1; j++){
-	d->cnts[d->masks[i].region-1] += dbuf[j];
+	d->cnts[d->masks[i].region-1] += (isnan(dbuf[j]) ? 0 : dbuf[j]);
       }
     }
     /* free temp buffer */
