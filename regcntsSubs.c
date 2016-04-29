@@ -140,6 +140,7 @@ void regcntsGetData(Opts opts, Data d){
 #ifdef USE_CFITSIO
   int ncard;
   int hdutype;
+  int naxis;
   long naxes[2];
   int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */
   fitsfile *nfptr=NULL;
@@ -149,12 +150,18 @@ void regcntsGetData(Opts opts, Data d){
   // process based on hdu type
   switch(hdutype){
   case IMAGE_HDU:
+    // we can pny handle 2D images
+    fits_get_img_dim(d->fptr, &naxis, &status);
+    if( naxis != 2 ){
+      xerror(stderr, "For now, 2D images only (this image has %d)\n", naxis);
+      return;
+    }
     // get cards as a string
     getHeaderToString(d->fptr, &d->cards, &ncard, &status);
     regcntsErrchk(status);
     // get image array
     if( opts->dodata ){
-      d->data = getImageToArray(d->fptr, NULL, NULL, 
+      d->data = getImageToArray(d->fptr, NULL, NULL, NULL,
 				&d->dim1, &d->dim2, &d->bitpix, &status);
       regcntsErrchk(status);
     }
@@ -169,7 +176,7 @@ void regcntsGetData(Opts opts, Data d){
     regcntsErrchk(status);
     if( opts->dodata ){
     // get image array
-      d->data = getImageToArray(nfptr, NULL, NULL, 
+      d->data = getImageToArray(nfptr, NULL, NULL, NULL,
 				&d->dim1, &d->dim2, &d->bitpix, &status);
       regcntsErrchk(status);
       closeFITSFile(nfptr, &status);

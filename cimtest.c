@@ -134,7 +134,9 @@ int main(int argc, char *argv[])
   char *tfilt=NULL;
   char *imem=NULL;
   char *cardstr=NULL;
-  int c, args, hdutype, ncard;
+  char *slice=NULL;
+  char tbuf[81];
+  int c, i, args, hdutype, ncard;
   int domem = 0;
   int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */
   int dims[] = {IMDIM, IMDIM};
@@ -157,10 +159,13 @@ int main(int argc, char *argv[])
 #endif
 
   /* process switch arguments */
-  while ((c = getopt(argc, argv, "m")) != -1){
+  while ((c = getopt(argc, argv, "ms:")) != -1){
     switch(c){
     case 'm':
       domem = 1;
+      break;
+    case 's':
+      slice = optarg;
       break;
     }
   }
@@ -204,7 +209,13 @@ int main(int argc, char *argv[])
   getHeaderToString(fptr, &cardstr, &ncard, &status);
   errchk(status);
   if( ncard && cardstr ){
-    fprintf(stdout, "Cards [%d]: %s\n", ncard, cardstr);
+    // print cards individually to make it easier to diff
+    fprintf(stdout, "Cards [%d]:\n", ncard);
+    tbuf[80] = '\0';
+    for(i=0; i<ncard; i++){
+      memcpy(tbuf, &cardstr[i*80], 80);
+      fprintf(stdout, "%s\n", tbuf);
+    }
     free(cardstr);
   }
   
@@ -212,7 +223,7 @@ int main(int argc, char *argv[])
   switch(hdutype){
   case IMAGE_HDU:
     // get image array
-    buf = getImageToArray(fptr, NULL, NULL, 
+    buf = getImageToArray(fptr, NULL, NULL, slice,
 			   &idim1, &idim2, &bitpix, &status);
     errchk(status);
     // image statistics on image section
@@ -232,7 +243,7 @@ int main(int argc, char *argv[])
 				   &status);
 	errchk(status);
 	// get image array
-	buf = getImageToArray(ofptr, dims, NULL, 
+	buf = getImageToArray(ofptr, dims, NULL, slice,
 			      &idim1, &idim2, &bitpix, &status);
 	errchk(status);
 	// image statistics on image section
@@ -247,7 +258,7 @@ int main(int argc, char *argv[])
       ofptr = filterTableToImage(fptr, NULL, colname, dims, NULL, 1, &status);
       errchk(status);
       // get image array
-      buf = getImageToArray(ofptr, dims, NULL, 
+      buf = getImageToArray(ofptr, dims, NULL, slice,
 			    &idim1, &idim2, &bitpix, &status);
       errchk(status);
       // image statistics on image section
