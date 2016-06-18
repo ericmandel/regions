@@ -31,8 +31,10 @@ https://groups.google.com/forum/#!topic/emscripten-discuss/JDaNHIRQ_G4
 #define MAX_MEMORY 450000000
 static int max_memory = MAX_MEMORY;
 
+// this routine was added to cfitsio v3.39
+#if (CFITSIO_MAJOR < 3) || ((CFITSIO_MAJOR == 3) && (CFITSIO_MINOR < 39))
 // ffhist3: same as ffhist2, but does not close the original file,
-// and/or replace the original file pointer 
+// and/or replace the original file pointer
 fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
            char *outfile,    /* I - name for the output histogram file      */
            int imagetype,    /* I - datatype for image: TINT, TSHORT, etc   */
@@ -88,7 +90,7 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
         *status = BAD_DATATYPE;
         return(NULL);
     }
-    
+
     /*    Calculate the binning parameters:    */
     /*   columm numbers, axes length, min values,  max values, and binsizes.  */
 
@@ -99,7 +101,7 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
        ffpmsg("failed to determine binning parameters");
         return(NULL);
     }
- 
+
     /* get the histogramming weighting factor, if any */
     if (*wtcol)
     {
@@ -158,10 +160,10 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
 
     /* if the table columns have no WCS keywords, then write default keywords */
     fits_write_keys_histo(fptr, histptr, naxis, colnum, status);
-    
+
     /* update the WCS keywords for the ref. pixel location, and pixel size */
-    fits_rebin_wcs(histptr, naxis, amin, binsize,  status);      
-    
+    fits_rebin_wcs(histptr, naxis, amin, binsize,  status);
+
     /* now compute the output image by binning the column values */
     if (fits_make_hist(fptr, histptr, bitpix, naxis, haxes, colnum, amin, amax,
         binsize, weight, wtcolnum, recip, selectrow, status) > 0)
@@ -169,9 +171,10 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
         ffpmsg("failed to calculate new histogram values");
         return(NULL);
     }
-              
+
     return(histptr);
 }
+#endif
 
 // gotoFITSHDU: try to go to a reasonable HDU if the primary is useless
 // we look for specified extensions and if not found, go to hdu #2

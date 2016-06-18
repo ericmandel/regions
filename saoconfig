@@ -34,15 +34,15 @@ case $name in
   ./configure 	$CF						\
 		--prefix=$HOME					\
 		--with-cfitsio=/proj/rd/linux64			\
-  		CC=gcc CFLAGS="$DEVFLAGS"		\
+  		CC=gcc CFLAGS="$DEVFLAGS"			\
  		$*
   ;;
 
   baba*)
   ./configure 	$CF						\
 		--prefix=$HOME					\
-		--with-cfitsio=$HOME/soft/cfitsio		\
-		CC=cc CFLAGS="$DEVFLAGS" 		\
+		--with-cfitsio=$HOME				\
+		CC=cc CFLAGS="$DEVFLAGS" 			\
 		$*
   ;;
 
@@ -50,7 +50,7 @@ case $name in
   ./configure 	$CF						\
 		--prefix=/pool14/eric				\
 		--with-cfitsio=/proj/rd/solaris			\
-  		CC=gcc CFLAGS="$DEVFLAGS"		\
+  		CC=gcc CFLAGS="$DEVFLAGS"			\
  		$*
   ;;
 
