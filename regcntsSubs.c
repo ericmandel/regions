@@ -141,11 +141,13 @@ void regcntsGetData(Opts opts, Data d){
   int ncard;
   int hdutype;
   int naxis;
+  int start[2];
+  int stop[2];
   long naxes[2];
   int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */
   fitsfile *nfptr=NULL;
   /* open the source FITS file */
-  d->fptr = openFITSFile(d->name, EXTLIST, &hdutype, &status);
+  d->fptr = openFITSFile(d->name, READONLY, EXTLIST, &hdutype, &status);
   regcntsErrchk(status);
   // process based on hdu type
   switch(hdutype){
@@ -162,9 +164,11 @@ void regcntsGetData(Opts opts, Data d){
     // get image array
     if( opts->dodata ){
       d->data = getImageToArray(d->fptr, NULL, NULL, NULL,
-				&d->dim1, &d->dim2, &d->bitpix, &status);
+				start, stop, &d->bitpix, &status);
       regcntsErrchk(status);
     }
+    d->dim1 = stop[0] - start[0] + 1;
+    d->dim2 = stop[1] - start[1] + 1;
     break;
   default:
     // image from table
@@ -177,8 +181,10 @@ void regcntsGetData(Opts opts, Data d){
     if( opts->dodata ){
     // get image array
       d->data = getImageToArray(nfptr, NULL, NULL, NULL,
-				&d->dim1, &d->dim2, &d->bitpix, &status);
+				start, stop, &d->bitpix, &status);
       regcntsErrchk(status);
+      d->dim1 = stop[0] - start[0] + 1;
+      d->dim2 = stop[1] - start[1] + 1;
       closeFITSFile(nfptr, &status);
     } else {
       closeFITSFile(d->fptr, &status);

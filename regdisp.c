@@ -141,7 +141,7 @@ int main(int argc, char **argv){
   if( args <= 0 ){
     regdispUsage(argv[0]);
   }
-  fptr = openFITSFile(argv[optind+0], EXTLIST, &hdutype, &status);
+  fptr = openFITSFile(argv[optind+0], READONLY, EXTLIST, &hdutype, &status);
   regcntsErrchk(status);
   if( (x1 == 0) || (y1 == 0) ){
     switch(hdutype){
