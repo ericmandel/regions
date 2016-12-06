@@ -156,7 +156,7 @@ WSRCS =  	$(WCS)/wcsinit.c \
 WOBJS = 	$(WSRCS:%.c=%.o)
 
 RSRCS =		lex.reg.c regions.c regprog.c regprog_c.c imregions.c \
-		jsfitsio.c dl.c
+		jsfitsio.c healpix.c dl.c
 ROBJS = 	$(RSRCS:%.c=%.o)
 
 SRCS =		regcnts.c regcntsSubs.c regcntsDisplay.c
