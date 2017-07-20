@@ -13,6 +13,7 @@ https://groups.google.com/forum/#!topic/emscripten-discuss/JDaNHIRQ_G4
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "fitsio.h"
 #include "healpix.h"
 #if EM
@@ -242,47 +243,84 @@ fitsfile *openFITSMem(void **buf, size_t *buflen, char *extlist,
 
 // update/add LTM and LTV header params
 // ftp://iraf.noao.edu/iraf/web/projects/fitswcs/specwcs.html
-void updateTLM(fitsfile *fptr, fitsfile *ofptr,
-	       int xcen, int ycen, int dim1, int dim2, int bin){
-  int tstatus;
-  double dvalue;
+void updateLTM(fitsfile *fptr, fitsfile *ofptr,
+	       int xcen, int ycen, int dim1, int dim2, int bin, int dowcs){
+  int status;
+  double x1, y1;
+  double dval;
   char comment[FLEN_CARD];
-  dvalue = 0.0; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTV1", &dvalue, comment, &tstatus);
-  dvalue = ((dim1 / 2) - xcen) / bin; tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTV1", &dvalue, comment, &tstatus);
-  dvalue = 0.0; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTV2", &dvalue, comment, &tstatus);
-  dvalue = ((dim2 / 2) - ycen) / bin; tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTV2", &dvalue, comment, &tstatus);
-  dvalue = 1.0 / bin; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM1_1", &dvalue, comment, &tstatus);
-  tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM1_1", &dvalue, comment, &tstatus);
-  dvalue = 0.0; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM1_2", &dvalue, comment, &tstatus);
-  tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM1_2", &dvalue, comment, &tstatus);
-  dvalue = 0.0; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM2_1", &dvalue, comment, &tstatus);
-  tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM2_1", &dvalue, comment, &tstatus);
-  dvalue = 1.0 / bin; *comment = '\0'; tstatus = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM2_2", &dvalue, comment, &tstatus);
-  tstatus = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM2_2", &dvalue, comment, &tstatus);
+  /* use 0-index. is this correct? */
+  x1 = (int)(xcen - (dim1 / 2.0));
+  y1 = (int)(ycen - (dim2 / 2.0));
+  if( !bin ){
+    bin = 1;
+  }
+  if( dowcs ){
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CRPIX1", &dval, comment, &status);
+    if( status == 0 ){
+      dval = (dval - x1) / bin;
+      fits_update_key(ofptr, TDOUBLE, "CRPIX1", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CRPIX2", &dval, comment, &status);
+    if( status == 0 ){
+      dval = (dval - y1) / bin;
+      fits_update_key(ofptr, TDOUBLE, "CRPIX2", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CDELT1", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CDELT1", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CDELT2", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CDELT2", &dval, comment, &status);
+    }
+  }
+  dval = 1.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
+  dval = dval / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
+  dval = 0.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
+  dval = dval / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
+  dval = 0.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
+  dval = dval / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
+  dval = 1.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
+  dval = dval / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
+  dval = 0.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTV1", &dval, comment, &status);
+  dval = (dval - x1) / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTV1", &dval, comment, &status);
+  dval = 0.0; *comment = '\0'; status = 0;
+  fits_read_key(fptr, TDOUBLE, "LTV2", &dval, comment, &status);
+  dval = (dval - y1) / bin; status = 0;
+  fits_update_key(ofptr, TDOUBLE, "LTV2", &dval, comment, &status);
 }
 
 // getImageToArray: extract a sub-section from an image HDU, return array
-void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
+void *getImageToArray(fitsfile *fptr, int *dims, double *cens,
+		      int bin, char *slice,
 		      int *start, int *end, int *bitpix, int *status){
-  int i, naxis, odim1, odim2;
-  int xcen, ycen, dim1, dim2, type;
+  int i, j, naxis, dim1, dim2, maxdim1, maxdim2, odim1, odim2, hidim1, hidim2;
+  int ttype, tsize;
+  int ooff = 0;
+  int ojoff = 0;
   int tstatus = 0;
   int doscale = 0;
-  void *obuf;
+  void *obuf, *rbuf;
   long totpix, totbytes;
-  long naxes[IDIM], fpixel[IDIM], lpixel[IDIM], inc[IDIM];
+  long naxes[IDIM], fpixel[IDIM], lpixel[IDIM], myfpixel[IDIM], inc[IDIM];
+  double xcen, ycen;
   double bscale = 1.0;
   double bzero = 0.0;
   char comment[FLEN_CARD];
@@ -290,6 +328,13 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
   int nslice, idx, iaxis0, iaxis1;
   int iaxes[2] = {0, 1};
   int saxes[IDIM] = {0, 0, 0, 0};
+  unsigned char *crbuf, *cobuf;
+  short *srbuf, *sobuf;
+  unsigned short *usrbuf, *usobuf;
+  int *irbuf, *iobuf;
+  long long *lrbuf, *lobuf;
+  float *frbuf, *fobuf;
+  double *drbuf, *dobuf;
   // seed buffers
   for(i=0; i<IDIM; i++){
     naxes[i] = 0;
@@ -304,6 +349,11 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
   if( naxis < 2 ){
     *status = BAD_DIMEN;
     return NULL;
+  }
+  // get binning parameter, integer only (for now)
+  bin = (int)bin;
+  if( bin <= 0 ){
+    bin = 1;
   }
   // parse slice string into primary axes and slice axes
   if( slice && *slice ){
@@ -328,28 +378,32 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
   // convenience variables for the primary axis indexes
   iaxis0 = iaxes[0];
   iaxis1 = iaxes[1];
-  // get limits of extracted section
+  // max dimension if each axis for integral binning
+  maxdim1 = (int)(naxes[iaxis0] / bin) * bin;
+  maxdim2 = (int)(naxes[iaxis1] / bin) * bin;
+  // get limits of extracted section taking binning into account
   if( dims && dims[0] && dims[1] ){
-    dim1 = min(dims[0], naxes[iaxis0]);
-    dim2 = min(dims[1], naxes[iaxis1]);
+    dim1 = min(dims[0], maxdim1);
+    dim2 = min(dims[1], maxdim2);
     // read image section
-    if( cens ){
+    if( cens && cens[0] && cens[1] ){
       xcen = cens[0];
       ycen = cens[1];
     } else {
-      xcen = naxes[iaxis0]/2;
-      ycen = naxes[iaxis1]/2;
+      xcen = maxdim1/2.0;
+      ycen = maxdim2/2.0;
     }
-    fpixel[iaxis0] = (int)(xcen - (dim1+1)/2);
-    fpixel[iaxis1] = (int)(ycen - (dim2+1)/2);
-    lpixel[iaxis0] = (int)(xcen + (dim1/2));
-    lpixel[iaxis1] = (int)(ycen + (dim2/2));
+    // min and max, indexed from 1
+    fpixel[iaxis0] = (int)(xcen - (dim1/2.0) + 1);
+    fpixel[iaxis1] = (int)(ycen - (dim2/2.0) + 1);
+    lpixel[iaxis0] = (int)(xcen + (dim1/2.0));
+    lpixel[iaxis1] = (int)(ycen + (dim2/2.0));
   } else {
     // read entire image
     fpixel[iaxis0] = 1;
     fpixel[iaxis1] = 1;
-    lpixel[iaxis0] = naxes[iaxis0];
-    lpixel[iaxis1] = naxes[iaxis1];
+    lpixel[iaxis0] = maxdim1;
+    lpixel[iaxis1] = maxdim2;
   }
   // stay within image limits
   fpixel[iaxis0] = max(fpixel[iaxis0], 1);
@@ -360,6 +414,21 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
   fpixel[iaxis1] = min(fpixel[iaxis1], naxes[iaxis1]);
   lpixel[iaxis1] = max(lpixel[iaxis1], 1);
   lpixel[iaxis1] = min(lpixel[iaxis1], naxes[iaxis1]);
+  /* get final dimensions, ensuring that bin divides dimensions evenly */
+  for(i=0; i<bin; i++){
+    odim1 = (lpixel[iaxis0] - fpixel[iaxis0] + 1);
+    if( (odim1 <= 0 ) || fmod(((float)odim1/(float)bin), 1) == 0.0 ){
+      break;
+    }
+    lpixel[iaxis0] -= 1;
+  }
+  for(i=0; i<bin; i++){
+    odim2 = (lpixel[iaxis1] - fpixel[iaxis1] + 1);
+    if( (odim2 <= 0 ) || fmod(((float)odim2/(float)bin), 1) == 0.0 ){
+      break;
+    }
+    lpixel[iaxis1] -= 1;
+  }
   // for sliced dimensions, set first and last pixel to the specified slice
   for(i=0; i<min(IDIM,naxis); i++){
     if( saxes[i] ){
@@ -383,8 +452,6 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
     end[1] = lpixel[iaxis1];
   }
   // make sure we have an image with valid dimensions size
-  odim1 = (lpixel[iaxis0] - fpixel[iaxis0] + 1);
-  odim2 = (lpixel[iaxis1] - fpixel[iaxis1] + 1);
   totpix = odim1 * odim2;
   if( totpix <= 1 ){
     *status = NEG_AXIS;
@@ -404,82 +471,177 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens, char *slice,
       if( doscale ){
 	// scaled data has to be float
 	*bitpix = -32;
-	type = TFLOAT;
-	totbytes = totpix * sizeof(float);
+	ttype = TFLOAT;
+	tsize = sizeof(float);
       } else {
-	type = TBYTE;
-	totbytes = totpix * sizeof(char);
+	ttype = TBYTE;
+	tsize = sizeof(char);
       }
       break;
     case 16:
       if( doscale ){
 	// scaled data has to be float
 	*bitpix = -32;
-	type = TFLOAT;
-	totbytes = totpix * sizeof(float);
+	ttype = TFLOAT;
+	tsize = sizeof(float);
       } else {
-	type = TSHORT;
-	totbytes = totpix * sizeof(short);
+	ttype = TSHORT;
+	tsize = sizeof(short);
       }
       break;
     case -16:
       if( doscale ){
 	// scaled data has to be float
 	*bitpix = -32;
-	type = TFLOAT;
-	totbytes = totpix * sizeof(float);
+	ttype = TFLOAT;
+	tsize = sizeof(float);
       } else {
-	type = TUSHORT;
-	totbytes = totpix * sizeof(unsigned short);
+	ttype = TUSHORT;
+	tsize = sizeof(unsigned short);
       }
       break;
     case 32:
       if( doscale ){
 	// scaled data has to be float
 	*bitpix = -32;
-	type = TFLOAT;
-	totbytes = totpix * sizeof(float);
+	ttype = TFLOAT;
+	tsize = sizeof(float);
       } else {
-	type = TINT;
-	totbytes = totpix * sizeof(int);
+	ttype = TINT;
+	tsize = sizeof(int);
       }
       break;
     case 64:
       if( doscale ){
 	// scaled data has to be float
 	*bitpix = -32;
-	type = TFLOAT;
-	totbytes = totpix * sizeof(float);
+	ttype = TFLOAT;
+	tsize = sizeof(float);
       } else {
-	type = TLONGLONG;
-	totbytes = totpix * sizeof(long long);
+	ttype = TLONGLONG;
+	tsize = sizeof(long long);
       }
       break;
     case -32:
-      type = TFLOAT;
-      totbytes = totpix * sizeof(float);
+      ttype = TFLOAT;
+      tsize = sizeof(float);
       break;
     case -64:
-      type = TDOUBLE;
-      totbytes = totpix * sizeof(double);
+      ttype = TDOUBLE;
+      tsize = sizeof(double);
       break;
   default:
     return NULL;
   }
+  if( bin == 1 ){
+    totbytes = totpix * tsize;
 #if EM
-  // sanity check on memory limits
-  if( totbytes > max_memory ){
-    *status = MEMORY_ALLOCATION;
-    return NULL;
-  }
+    // sanity check on memory limits
+    if( totbytes > max_memory ){
+      *status = MEMORY_ALLOCATION;
+      return NULL;
+    }
 #endif
-  // try to allocate that much memory
-  if(!(obuf = (void *)malloc(totbytes))){
-    *status = MEMORY_ALLOCATION;
-    return NULL;
+    // allocate memory for the whole image section
+    if(!(obuf = (void *)calloc(totbytes, sizeof(char)))){
+      *status = MEMORY_ALLOCATION;
+      return NULL;
+    }
+    /* read the image section */
+    fits_read_subset(fptr, ttype, fpixel, lpixel, inc, 0, obuf, 0, status);
+  } else {
+    // allocate memory for one full row of input data
+    if(!(rbuf = (void *)calloc(odim1 * tsize, sizeof(char)))){
+      *status = MEMORY_ALLOCATION;
+      return NULL;
+    }
+    // get total bytes
+    totbytes = (int)((int)(odim1 / bin) * (int)(odim2 / bin) * tsize);
+    /* allocate memory for the output binned image section */
+    if( !(obuf = (void *)calloc(totbytes, sizeof(char))) ){
+      *status = MEMORY_ALLOCATION;
+      return NULL;
+    }
+    switch(*bitpix){
+    case 8:
+      crbuf = (unsigned char *)rbuf;
+      cobuf = (unsigned char *)obuf;
+      break;
+    case 16:
+      srbuf = (short *)rbuf;
+      sobuf = (short *)obuf;
+      break;
+    case -16:
+      usrbuf = (unsigned short *)rbuf;
+      usobuf = (unsigned short *)obuf;
+      break;
+    case 32:
+      irbuf = (int *)rbuf;
+      iobuf = (int *)obuf;
+      break;
+    case 64:
+      lrbuf = (long long *)rbuf;
+      lobuf = (long long *)obuf;
+      break;
+    case -32:
+      frbuf = (float *)rbuf;
+      fobuf = (float *)obuf;
+      break;
+    case -64:
+      drbuf = (double *)rbuf;
+      dobuf = (double *)obuf;
+      break;
+    }
+    /* seed section limits */
+    for(i=0; i<IDIM; i++){
+      myfpixel[i] = fpixel[i];
+    }
+    // loop limits
+    hidim1 = (int)(odim1/bin)*bin;
+    hidim2 = (int)(odim2/bin)*bin;
+    /* for each row */
+    for(j=0; j<hidim2; j++){
+      /* read next line of the section */
+      myfpixel[1] = fpixel[1] + j;
+      tstatus = 0;
+      /* read next line */
+      fits_read_pix(fptr, ttype, myfpixel, odim1, NULL, rbuf, NULL, &tstatus);
+      /* exit on error, perhaps we still have something to show */
+      if( tstatus ){
+	break;
+      }
+      ojoff = (int)(j / bin) * (int)(odim1 / bin);
+      /* for each column */
+      for(i=0; i<hidim1; i++){
+	ooff = ojoff + (int)(i / bin);
+	switch(*bitpix){
+	case 8:
+	  cobuf[ooff] += crbuf[i];
+	  break;
+	case 16:
+	  sobuf[ooff] += srbuf[i];
+	  break;
+	case -16:
+	  usobuf[ooff] += usrbuf[i];
+	  break;
+	case 32:
+	  iobuf[ooff] += irbuf[i];
+	  break;
+	case 64:
+	  lobuf[ooff] += lrbuf[i];
+	  break;
+	case -32:
+	  fobuf[ooff] += frbuf[i];
+	  break;
+	case -64:
+	  dobuf[ooff] += drbuf[i];
+	  break;
+	}
+      }
+    }
+    free(rbuf);
   }
-  /* read the image section */
-  fits_read_subset(fptr, type, fpixel, lpixel, inc, 0, obuf, 0, status);
+
   // return pixel buffer (and section dimensions)
   return obuf;
 }
@@ -491,7 +653,7 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   int imagetype=TINT, naxis=2, recip=0;
   long nirow, norow;
   float weight=1;
-  float xcen, ycen;
+  double xcen, ycen;
   double minin[IDIM], maxin[IDIM], binsizein[IDIM];
   char param[FLEN_CARD];
   char comment[FLEN_CARD];
@@ -504,6 +666,7 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   char binname[IDIM][FLEN_VALUE];
   int colnum[IDIM];
   long haxes[IDIM];
+  long naxes[IDIM];
   float amin[IDIM];
   float amax[IDIM];
   float binsize[IDIM];
@@ -532,6 +695,17 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
     if( *status > 0 ){
       return NULL;
     }
+    // if 0,0 was input, change to center of image
+    if( cens && ((cens[0] == 0) || (cens[1] == 0)) ){
+      tstatus = 0;
+      fits_get_img_size(ofptr, 2, naxes, &tstatus);
+      if( cens[0] == 0 ){
+	cens[0] = naxes[0]/2;
+      }
+      if( cens[1] == 0 ){
+	cens[1] = naxes[1]/2;
+      }
+    }
     return ofptr;
   }
   // otherwise, it's an ordinary binary table
@@ -556,7 +730,7 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   // get total number of rows in input file
   fits_get_num_rows(fptr, &nirow, status);
   // and allocate memory for selected rows array
-  rowselect = malloc(nirow+1);
+  rowselect = calloc(nirow+1, sizeof(char));
   // filter the input file and generate selected rows array
   if( filter && *filter ){
     fits_find_rows(fptr, filter, 0, nirow, &norow, rowselect,  status);
@@ -577,8 +751,8 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
     return(NULL);
   }
   // why truncate to int? otherwise, cfitsio is 0.5 pixels off from js9 ...
-  xcen = (int)(amax[0] + amin[0])/2;
-  ycen = (int)(amax[1] + amin[1])/2;
+  xcen = (int)(amax[0] + amin[0])/2.0;
+  ycen = (int)(amax[1] + amin[1])/2.0;
   dim1 = haxes[0];
   dim2 = haxes[0];
   // get limits of extracted section
@@ -597,12 +771,13 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
 	dim2 = dims[1];
       }
     }
-    dim1 *= bin;
-    dim2 *= bin;
-    minin[0] = (int)(xcen - ((dim1+1)/2));
-    minin[1] = (int)(ycen - ((dim2+1)/2));
-    maxin[0] = (int)(xcen + (dim1/2));
-    maxin[1] = (int)(ycen + (dim2/2));
+//    dim1 *= bin;
+//    dim2 *= bin;
+    // min and max, indexed from 1
+    minin[0] = (int)(xcen - (dim1/2.0));
+    minin[1] = (int)(ycen - (dim2/2.0));
+    maxin[0] = (int)(xcen + (dim1/2.0));
+    maxin[1] = (int)(ycen + (dim2/2.0));
   }
   // make 2D section histogram from selected rows
   ofptr = ffhist3(fptr, outfile, imagetype, naxis, colname,
@@ -612,11 +787,13 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
     return NULL;
   }
   // update/add LTM and LTV header params
-  updateTLM(fptr, ofptr, xcen, ycen, dim1, dim2, bin);
+  updateLTM(fptr, ofptr, xcen, ycen, dim1, dim2, bin, 0);
   // return the center and dims used
   if( dims ){
-    dims[0] = dim1 / bin;
-    dims[1] = dim2 / bin;
+//    dims[0] = dim1 / bin;
+//    dims[1] = dim2 / bin;
+    dims[0] = dim1;
+    dims[1] = dim2;
   }
   if( cens ){
     cens[0] = xcen;
