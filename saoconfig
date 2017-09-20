@@ -63,6 +63,14 @@ case $name in
  		$*
   ;;
 
+  smartx*)
+  ./configure   $CF                                                     \
+                --prefix=/smartx                                        \
+                --with-cfitsio=/smartx/cfitsio                          \
+                CC=gcc CFLAGS="$CFLAGS $GCCFLAGS"                       \
+                $*
+  ;;
+
   *)
   ./configure 	$CF $*
   ;;
