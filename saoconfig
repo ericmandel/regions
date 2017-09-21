@@ -43,7 +43,7 @@ case $name in
 		--prefix=$HOME				\
 		--with-cfitsio=$HOME			\
 		--with-filter-cflags="-O2"		\
-		CC=gcc CFLAGS="$CFLAGS $GCCFLAGS"	\
+		CC=gcc CFLAGS="$CFLAGS $PRODFLAGS"	\
 		$*
   ;;
 
@@ -67,7 +67,8 @@ case $name in
   ./configure   $CF                                                     \
                 --prefix=/smartx                                        \
                 --with-cfitsio=/smartx/cfitsio                          \
-                CC=gcc CFLAGS="$CFLAGS $GCCFLAGS"                       \
+		--with-filter-cflags="-O2"				\
+                CC=gcc CFLAGS="$CFLAGS $PRODFLAGS"                      \
                 $*
   ;;
 
