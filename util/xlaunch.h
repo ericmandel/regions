@@ -41,11 +41,11 @@
 #define LAUNCH_WAIT_MSEC  5000
 #endif
 
-#if defined(__CYGWIN__) || defined(_WIN32)
+#if defined(__CYGWIN__) || defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define HAVE_SPAWNVP 1
 #endif
 
-#if !defined(__CYGWIN__) && !defined(_WIN32)
+#if !defined(__CYGWIN__) && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define HAVE_POSIX_SPAWN 1
 #include <spawn.h>
 #endif
@@ -53,6 +53,9 @@
 #ifdef __MINGW32__
 /* for now, ensure that MinGW utilizes spawnvp() */
 #define LAUNCH_DEFAULT_WHICH 3
+#elif __EMSCRIPTEN__
+/* use our home-grown version */
+#define LAUNCH_DEFAULT_WHICH 1
 #elif HAVE_POSIX_SPAWN
 /* use posix_spawn if possible (required for OS X 10.5) */
 #define LAUNCH_DEFAULT_WHICH 2

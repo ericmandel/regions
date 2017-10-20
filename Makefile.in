@@ -70,6 +70,8 @@ AWK =		@AWK@
 
 # does ranlib exist?
 RANLIB =	@RANLIB@
+# what about ar?
+AR =		@AR@
 
 # special suffix on programs (Windows)?
 EXE =		@EXEEXT@
@@ -106,7 +108,6 @@ REGIONS_CFLAGS=	@REGIONS_CFLAGS@
 
 RM =		rm -rf
 LEX =		flex -i
-AR =		ar cruv
 
 # for debugging using funtools
 # FUNTOOLS =	$$HOME
@@ -155,8 +156,8 @@ WSRCS =  	$(WCS)/wcsinit.c \
 		$(WCS)/zpxpos.c
 WOBJS = 	$(WSRCS:%.c=%.o)
 
-RSRCS =		lex.reg.c regions.c regprog.c regprog_c.c imregions.c \
-		jsfitsio.c healpix.c dl.c
+RSRCS =		lex.reg.c regions.c regprog.c regprog_c.c regprog_em.c \
+		imregions.c imfilter.c jsfitsio.c healpix.c dl.c
 ROBJS = 	$(RSRCS:%.c=%.o)
 
 SRCS =		regcnts.c regcntsSubs.c regcntsDisplay.c
@@ -174,12 +175,14 @@ DS9TOOLS =	regions.ds9
 TPROGS =	cimtest
 
 LIBS =		libregions.a
+EMLIBS =	libregions_em.a
 
 INCS =		regions.h
 
 INCP =		regionsP.h
 
 LIBOBJS	=	$(ROBJS) $(WOBJS) $(UOBJS)
+EMLIBOBJS =	$(ROBJS) $(UOBJS)
 
 IDIRS =		$(LIB_INSTALL_DIR) $(INCLUDE_INSTALL_DIR) $(BIN_INSTALL_DIR)
 
@@ -189,11 +192,19 @@ progs:		$(PROGS)
 
 tprogs:		$(TPROGS)
 
+objs:		$(OBJS)
+
 lib:		$(LIBS)
 
+emlib:		$(EMLIBS)
+
 libregions.a:	$(LIBOBJS) $(INCS) $(INCP)
-		$(AR) $@ $?
+		$(AR) cruv $@ $?
 		$(RANLIB) $@
+
+libregions_em.a:$(EMLIBOBJS) $(INCS) $(INCP)
+		$(AR) cruv libregions.a $?
+		$(RANLIB) libregions.a
 
 # automatic variables defined in:
 # http://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
@@ -214,10 +225,11 @@ regprog_c.o:	regprog_c.c
 
 parser:		lex.reg.c
 
-lex.reg.c:	reg.l
-		@(echo "generating region parser ..."; $(LEX) -Preg reg.l; \
-		  sed "s/yytext_ptr/regtext_ptr/g" < lex.reg.c > nlex.reg.c; \
-		  mv nlex.reg.c lex.reg.c)
+LPRE =		regions
+lex.reg.c:	FORCE
+		@(echo "generating region parser ..."; $(LEX) -P$(LPRE) reg.l; \
+		  sed "s/yytext_ptr/"$(LPRE)"text_ptr/g" < lex.$(LPRE).c > nlex.reg.c; \
+		  mv nlex.reg.c lex.reg.c; rm -f lex.$(LPRE).c)
 
 imregions_h.h:	imregions.h include.sed
 		@($(RM) imregions_h.h; \
@@ -273,13 +285,14 @@ clean:		FORCE
 		@($(RM) *{.a,.so,.so.?,.so.?.?,.o,.dylib} \
 		  $(PROGS) $(TPROGS) \
 		  *.exe core core.[0-9]* errs *pure* .nfs* \
-		  foo* *~ *.log \#* TAGS *.E a.out errors \
+		  foo* *~ *.log \#* TAGS *.E a.out a.out.js errors \
 		  gmon.out *.pg *.bak regtest.{pr,dy,co} \
 		  config.info config.log autom4te.cache *.dSYM; \
 		  $(RM) $(DOC)/*{~,.bak} \
 		  $(RM) $(WCS)/*{~,.o} \
 		  $(RM) $(UTIL)/*{~,.o}; \
-		  $(RM) $(TESTDIR)/*{~,.out,.log,.pr,.dy})
+		  $(RM) $(TESTDIR)/*{~,.out,.log,.pr,.dy}; \
+		  cd em && make clean;)
 
 Makefile:	Makefile.in
 		$(SHELL) config.status

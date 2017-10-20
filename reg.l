@@ -1142,6 +1142,9 @@ static void _regStart() {
     regid = TY_POLYGON;
   }
   /* image are filtered by image pixels */
+  if( xreg->reg_prefix ){
+    _regCat(xreg->reg_prefix);
+  }
   _regCat("im");
   /* no region value to start */
   seg[nseg-1]->regval = 0;
@@ -2185,7 +2188,7 @@ int regparse(Regions reg){
   /* scan new string */
   _regScanString(xreg->regstr);
   /* parse regions */
-  reglex();
+  regionslex();
   /* check for error */
   if( parse_error ){
     return -1;
@@ -2200,7 +2203,7 @@ int regparse(Regions reg){
   reg->nreg = _regRegions(TOK_IREG);
   /* clean up parser */
   _regParseEnd();
-  reglex_destroy();
+  regionslex_destroy();
   /* return number of mask segments */
   return reg->nshape;
 }

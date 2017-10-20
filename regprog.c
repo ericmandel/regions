@@ -47,15 +47,6 @@ int RegionsProgOpen(Regions reg){
   if( reg->debug > 1 ){
     fprintf(stderr, "in RegionsProgOpen\n");
   }
-  /* check the mode for known techniques and load drivers */
-  switch( reg->method ){
-  case METHOD_C:
-    RegionsProgLoad_C(reg);
-    break;
-  default:
-    xerror(stderr, "unknown region filtering technique: %d\n", reg->method);
-    return 0;
-  }
   /* call the technique-specific routine */
   if( reg->reg_open ){
     return (reg->reg_open)(reg);

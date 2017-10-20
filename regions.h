@@ -57,6 +57,8 @@ typedef struct regrec {
   void *ohandle;
   /* used for dynamic linking */
   void *dl;
+  /* prefix for each region (e.g. "Module." for emscripten) */
+  char *reg_prefix;
   /* loadable drivers for each technique */
   /* NB: can't use typdef because we refer to this struct */
   int (*reg_start)(struct regrec *reg);
@@ -88,5 +90,8 @@ Regions OpenRegions(char *cards, char *regions, char *mode);
 int FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block,
 		  RegionsMask *mask, int *nreg);
 int CloseRegions(Regions reg);
+
+/* semi-public (shared by specific compiler implementations) */
+char *_RegionsInitString(Regions reg);
 
 #endif /* __regions.h */

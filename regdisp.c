@@ -105,7 +105,11 @@ void doreg(char *cards, char *regstr,
   xfree(lines);
 }
 
+#if __EMSCRIPTEN__
+int regdisp (int argc, char **argv){
+#else
 int main(int argc, char **argv){
+#endif
   int i, c, args, hdutype, ncard;
   int status=0;
   int mode=1;

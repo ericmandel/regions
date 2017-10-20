@@ -11,32 +11,32 @@
 #include "regcnts.h"
 
 /* display results header */
-void regcntsDisplayHeader(Opts opts, Data src, Data bkg, Res res){
+static void regcntsDisplayHeaderRDB(Opts opts, Data src, Data bkg, Res res){
   char *s;
   /* display source header information */
-  fprintf(stdout, "# source\n");
-  fprintf(stdout, "#   data_file:\t\t%s\n", src->name);
+  fprintf(opts->fd, "# source\n");
+  fprintf(opts->fd, "#   data_file:\t\t%s\n", src->name);
   if( opts->bin != 1 ){
-    fprintf(stdout, "#   auto_block:\t\t%d\n", opts->bin);
+    fprintf(opts->fd, "#   auto_block:\t\t%d\n", opts->bin);
   }
   if( src->dpp > 0.0 ){
-    fprintf(stdout, "#   arcsec/pixel:\t%g\n", src->dpp*ASEC_DEG);
+    fprintf(opts->fd, "#   arcsec/pixel:\t%g\n", src->dpp*ASEC_DEG);
   }
   /* display bkgd header information */
-  fprintf(stdout, "# background\n");
+  fprintf(opts->fd, "# background\n");
   if( bkg->name ){
-    fprintf(stdout, "#   data_file:\t\t%s\n", bkg->name);
+    fprintf(opts->fd, "#   data_file:\t\t%s\n", bkg->name);
     if( bkg->dpp > 0.0 ){
-      fprintf(stdout, "#   arcsec/pixel:\t%g\n", bkg->dpp*ASEC_DEG);
+      fprintf(opts->fd, "#   arcsec/pixel:\t%g\n", bkg->dpp*ASEC_DEG);
     }
     if( res->dppnorm != 1.0 ){
-      fprintf(stdout, "# wcs area norm factor:\t%g/%g (source/bkgd))\n",
+      fprintf(opts->fd, "# wcs area norm factor:\t%g/%g (source/bkgd))\n",
 	      src->dpp,bkg->dpp);
     }
   } else if( opts->bktype != BKG_VAL ){
-    fprintf(stdout, "#   data_file:\t\t%s\n", src->name);
+    fprintf(opts->fd, "#   data_file:\t\t%s\n", src->name);
   } else {
-    fprintf(stdout, "#   constant_value:\t%.6f\n", res->bkgval);
+    fprintf(opts->fd, "#   constant_value:\t%.6f\n", res->bkgval);
   }
   /* dislay table information */
   if( (src->dpp > 0.0) && !opts->dopixels ){
@@ -44,18 +44,18 @@ void regcntsDisplayHeader(Opts opts, Data src, Data bkg, Res res){
   } else {
     s = "pixel";
   }
-  fprintf(stdout, "# column units\n");
-  fprintf(stdout, "#   area:\t\t%s**2\n", s);
-  fprintf(stdout, "#   surf_bri:\t\tcnts/%s**2\n", s);
-  fprintf(stdout, "#   surf_err:\t\tcnts/%s**2\n", s);
+  fprintf(opts->fd, "# column units\n");
+  fprintf(opts->fd, "#   area:\t\t%s**2\n", s);
+  fprintf(opts->fd, "#   surf_bri:\t\tcnts/%s**2\n", s);
+  fprintf(opts->fd, "#   surf_err:\t\tcnts/%s**2\n", s);
   if( opts->doradang ){
-    fprintf(stdout, "#   radii:\t\t%ss\n", s);
-    fprintf(stdout, "#   angles:\t\tdegrees\n");
+    fprintf(opts->fd, "#   radii:\t\t%ss\n", s);
+    fprintf(opts->fd, "#   angles:\t\tdegrees\n");
   }
 }
 
 /* display main results info */
-void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
+static void regcntsDisplayMainInfoRDB(Opts opts, Data src, Res res){
   int i, j;
   char *cradang=NULL;
   char *tradang=NULL;
@@ -63,37 +63,37 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
   char tbuf[SZ_LINE];
   switch( opts->dosum ){
   case 1:
-    fprintf(stdout, "\n");
-    fprintf(stdout, "# summed background-subtracted results\n");
-    fprintf(stdout, "upto%c  net_counts%c    error", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "# summed background-subtracted results\n");
+    fprintf(opts->fd, "upto%c  net_counts%c    error", opts->c, opts->c);
     break;
   case 2:
   default:
     if( opts->c == '\t' ){
-      fprintf(stdout, "\f");
+      fprintf(opts->fd, "\f");
     }
-    fprintf(stdout, "\n");
-    fprintf(stdout, "# background-subtracted results\n");
-    fprintf(stdout, " reg%c  net_counts%c    error", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "# background-subtracted results\n");
+    fprintf(opts->fd, " reg%c  net_counts%c    error", opts->c, opts->c);
     break;
   }
-  fprintf(stdout, "%c  background%c   berror", opts->c, opts->c);
-  fprintf(stdout, "%c     area%c surf_bri%c surf_err",
+  fprintf(opts->fd, "%c  background%c   berror", opts->c, opts->c);
+  fprintf(opts->fd, "%c     area%c surf_bri%c surf_err",
 	  opts->c, opts->c, opts->c);
   if( opts->doradang ){
-    fprintf(stdout, "%c  radius1%c  radius2%c   angle1%c   angle2",
+    fprintf(opts->fd, "%c  radius1%c  radius2%c   angle1%c   angle2",
 	    opts->c, opts->c, opts->c, opts->c);
   }
-  fprintf(stdout, "\n");
-  fprintf(stdout, "----%c------------%c---------", opts->c, opts->c);
-  fprintf(stdout, "%c------------%c---------", opts->c, opts->c);
-  fprintf(stdout, "%c---------%c---------%c---------", 
+  fprintf(opts->fd, "\n");
+  fprintf(opts->fd, "----%c------------%c---------", opts->c, opts->c);
+  fprintf(opts->fd, "%c------------%c---------", opts->c, opts->c);
+  fprintf(opts->fd, "%c---------%c---------%c---------",
 	  opts->c, opts->c, opts->c);
   if( opts->doradang ){
-    fprintf(stdout, "%c---------%c---------%c---------%c---------",
+    fprintf(opts->fd, "%c---------%c---------%c---------%c---------",
 	    opts->c, opts->c, opts->c, opts->c);
   }
-  fprintf(stdout, "\n");
+  fprintf(opts->fd, "\n");
   if( res->radang ){
     newdtable(",");
   }
@@ -131,8 +131,8 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
 	fmt = "%4d%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g";
 	break;
       }
-      fprintf(stdout, fmt,
-	      i+1, opts->c, 
+      fprintf(opts->fd, fmt,
+	      i+1, opts->c,
 	      res->bscnts[i], opts->c, res->bserr[i], opts->c,
 	      res->bncnts[i], opts->c, res->bnerr[i], opts->c,
 	      areasq, opts->c, cntsperarea, opts->c, errperarea);
@@ -144,17 +144,17 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
 	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
 	    dval = strtod(tbuf, NULL);
 	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
-	      fprintf(stdout, "%c%9.3f", opts->c, (dval*src->dpp*ASEC_DEG));
+	      fprintf(opts->fd, "%c%9.3f", opts->c, (dval*src->dpp*ASEC_DEG));
 	    } else {
-	      fprintf(stdout, "%c%9.3f", opts->c, dval);
+	      fprintf(opts->fd, "%c%9.3f", opts->c, dval);
 	    }
 	  } else {
-	    fprintf(stdout, "%c%9.9s", opts->c, "NA");
+	    fprintf(opts->fd, "%c%9.9s", opts->c, "NA");
 	  }
 	}
       }
       /* new-line at end  */
-      fprintf(stdout, "\n");
+      fprintf(opts->fd, "\n");
     } else if( opts->dozero ){
     /* might have to display zero area pixels */
       /* get correctly precisioned format statement */
@@ -169,8 +169,8 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
 	fmt = "%4d%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g%c%.14g";
 	break;
       }
-      fprintf(stdout, fmt, 
-	      i+1, opts->c, 0.0, opts->c, 0.0, opts->c, 0.0, opts->c, 0.0, 
+      fprintf(opts->fd, fmt,
+	      i+1, opts->c, 0.0, opts->c, 0.0, opts->c, 0.0, opts->c, 0.0,
 	      opts->c, 0.0, opts->c, 0.0, opts->c, 0.0);
       /* add the correct radii and angle info, to make plotting easier */
       if( opts->doradang && cradang ){
@@ -180,17 +180,17 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
 	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
 	    dval = strtod(tbuf, NULL);
 	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
-	      fprintf(stdout, "%c%9.3f", opts->c, (dval*src->dpp*ASEC_DEG));
+	      fprintf(opts->fd, "%c%9.3f", opts->c, (dval*src->dpp*ASEC_DEG));
 	    } else {
-	      fprintf(stdout, "%c%9.3f", opts->c, dval);
+	      fprintf(opts->fd, "%c%9.3f", opts->c, dval);
 	    }
 	  } else {
-	    fprintf(stdout, "%c%9.9s", opts->c, "NA");
+	    fprintf(opts->fd, "%c%9.9s", opts->c, "NA");
 	  }
 	}
       }
       /* new-line at end  */
-      fprintf(stdout, "\n");
+      fprintf(opts->fd, "\n");
     }
     /* bump to next line of radii/angles */
     if( tradang ){
@@ -202,29 +202,31 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
   if( res->radang ){
     freedtable();
   }
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  fprintf(opts->fd, "\n");
+  fflush(opts->fd);
 }
 
 /* display raw source info */
-void regcntsDisplaySrcInfo(Opts opts, Data src){
+static void regcntsDisplaySrcInfoRDB(Opts opts, Data src){
   int i;
   int tarea=0;
   double tcnts=0;
   char *fmt=NULL;
   /* display raw source counts */
   if( opts->dosum ){
-    if( opts->c == '\t' ) fprintf(stdout, "\f");
-    fprintf(stdout, "\n");
+    if( opts->c == '\t' ){
+      fprintf(opts->fd, "\f");
+    }
+    fprintf(opts->fd, "\n");
     /* display source info */
     if( src->filtstr ){
-      fprintf(stdout, "# source_region(s):\n");
-      fprintf(stdout, "# %s\n\n", src->filtstr);
+      fprintf(opts->fd, "# source_region(s):\n");
+      fprintf(opts->fd, "# %s\n\n", src->filtstr);
     }
-    fprintf(stdout, "# summed_source_data\n");
-    fprintf(stdout, " reg%c      counts%c   pixels%c     sumcnts%c   sumpix\n",
+    fprintf(opts->fd, "# summed_source_data\n");
+    fprintf(opts->fd, " reg%c      counts%c   pixels%c     sumcnts%c   sumpix\n",
 	    opts->c, opts->c, opts->c, opts->c);
-    fprintf(stdout,
+    fprintf(opts->fd,
 	    "----%c------------%c---------%c------------%c---------\n",
 	    opts->c, opts->c, opts->c, opts->c);
     for(i=0; i<src->nreg; i++){
@@ -242,25 +244,25 @@ void regcntsDisplaySrcInfo(Opts opts, Data src){
 	fmt = "%4d%c%.14g%c%9d%c%.14g%c%9d\n";
 	break;
       }
-      fprintf(stdout, fmt,
+      fprintf(opts->fd, fmt,
 	      i+1, opts->c,
 	      src->cnts[i], opts->c, src->area[i], opts->c,
 	      tcnts, opts->c, tarea);
     }
   } else {
     if( opts->c == '\t' ){
-      fprintf(stdout, "\f");
+      fprintf(opts->fd, "\f");
     }
     /* display source info */
     if( src->filtstr ){
-      fprintf(stdout, "# source_region(s):\n");
-      fprintf(stdout, "# %s\n\n", src->filtstr);
+      fprintf(opts->fd, "# source_region(s):\n");
+      fprintf(opts->fd, "# %s\n\n", src->filtstr);
     }
-    fprintf(stdout, "# source_data\n");
-    fprintf(stdout, " reg%c      counts%c   pixels", opts->c, opts->c);
-    fprintf(stdout, "\n");
-    fprintf(stdout, "----%c------------%c---------", opts->c, opts->c);
-    fprintf(stdout, "\n");
+    fprintf(opts->fd, "# source_data\n");
+    fprintf(opts->fd, " reg%c      counts%c   pixels", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "----%c------------%c---------", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
     for(i=0; i<src->nreg; i++){
       /* get correctly precisioned format statement */
       switch(opts->dog){
@@ -274,16 +276,16 @@ void regcntsDisplaySrcInfo(Opts opts, Data src){
 	fmt = "%4d%c%.14g%c%9d";
 	break;
       }
-      fprintf(stdout, fmt, i+1, opts->c, src->cnts[i], opts->c, src->area[i]);
-      fprintf(stdout, "\n");
+      fprintf(opts->fd, fmt, i+1, opts->c, src->cnts[i], opts->c, src->area[i]);
+      fprintf(opts->fd, "\n");
     }
   }
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  fprintf(opts->fd, "\n");
+  fflush(opts->fd);
 }
 
 /* display raw background info */
-void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
+static void regcntsDisplayBkgInfoRDB(Opts opts, Data bkg, Res res){
   int i;
   char *fmt=NULL;
   /* display raw background info */
@@ -292,17 +294,17 @@ void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
     break;
   case BKG_ALL:
     if( opts->c == '\t' ){
-      fprintf(stdout, "\f");
+      fprintf(opts->fd, "\f");
     }
     if( bkg->filtstr ){
-      fprintf(stdout, "# background_region(s)\n");
-      fprintf(stdout, "# %s\n\n", bkg->filtstr);
+      fprintf(opts->fd, "# background_region(s)\n");
+      fprintf(opts->fd, "# %s\n\n", bkg->filtstr);
     }
-    fprintf(stdout, "# background_data\n");
-    fprintf(stdout, " reg%c      counts%c   pixels", opts->c, opts->c);
-    fprintf(stdout, "\n");
-    fprintf(stdout, "----%c------------%c---------", opts->c, opts->c);
-    fprintf(stdout, "\n");
+    fprintf(opts->fd, "# background_data\n");
+    fprintf(opts->fd, " reg%c      counts%c   pixels", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "----%c------------%c---------", opts->c, opts->c);
+    fprintf(opts->fd, "\n");
     /* get correctly precisioned format statement */
     switch(opts->dog){
     case 0:
@@ -315,25 +317,25 @@ void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
       fmt = "%s%c%.14g%c%9d";
       break;
     }
-    fprintf(stdout, fmt, "all ", opts->c, res->bkgval, opts->c, res->bkgarea);
-    fprintf(stdout, "\n");
+    fprintf(opts->fd, fmt, "all ", opts->c, res->bkgval, opts->c, res->bkgarea);
+    fprintf(opts->fd, "\n");
     break;
   case BKG_EACH:
     if( opts->dosum ){
       int tarea=0;
       double tcnts=0;
       if( opts->c == '\t' ){
-	fprintf(stdout, "\f");
+	fprintf(opts->fd, "\f");
       }
       if( bkg->filtstr ){
-	fprintf(stdout, "# background_region(s)\n");
-	fprintf(stdout, "# %s\n\n", bkg->filtstr);
+	fprintf(opts->fd, "# background_region(s)\n");
+	fprintf(opts->fd, "# %s\n\n", bkg->filtstr);
       }
-      fprintf(stdout, "# summed_background_data\n");
-      fprintf(stdout,
+      fprintf(opts->fd, "# summed_background_data\n");
+      fprintf(opts->fd,
 	      " reg%c      counts%c   pixels%c     sumcnts%c   sumpix\n",
 	      opts->c, opts->c, opts->c, opts->c);
-      fprintf(stdout, 
+      fprintf(opts->fd,
 	      "----%c------------%c---------%c------------%c---------\n",
 	      opts->c, opts->c, opts->c, opts->c);
       for(i=0; i<bkg->nreg; i++){
@@ -351,21 +353,21 @@ void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
 	  fmt = "%4d%c%.14g%c%9d%c%.14g%c%9d\n";
 	  break;
 	}
-	fprintf(stdout, fmt, i+1, opts->c,
+	fprintf(opts->fd, fmt, i+1, opts->c,
 		bkg->cnts[i], opts->c, bkg->area[i], opts->c,
 		tcnts, opts->c, tarea);
       }
     } else {
-      if( opts->c == '\t' ) fprintf(stdout, "\f");
+      if( opts->c == '\t' ) fprintf(opts->fd, "\f");
       if( bkg->filtstr ){
-	fprintf(stdout, "# background_region(s)\n");
-	fprintf(stdout, "# %s\n\n", bkg->filtstr);
+	fprintf(opts->fd, "# background_region(s)\n");
+	fprintf(opts->fd, "# %s\n\n", bkg->filtstr);
       }
-      fprintf(stdout, "# background_data\n");
-      fprintf(stdout, " reg%c      counts%c   pixels", opts->c, opts->c);
-      fprintf(stdout, "\n");
-      fprintf(stdout, "----%c------------%c---------", opts->c, opts->c);
-      fprintf(stdout, "\n");
+      fprintf(opts->fd, "# background_data\n");
+      fprintf(opts->fd, " reg%c      counts%c   pixels", opts->c, opts->c);
+      fprintf(opts->fd, "\n");
+      fprintf(opts->fd, "----%c------------%c---------", opts->c, opts->c);
+      fprintf(opts->fd, "\n");
       for(i=0; i<bkg->nreg; i++){
 	/* get correctly precisioned format statement */
 	switch(opts->dog){
@@ -379,12 +381,502 @@ void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
 	  fmt = "%4d%c%.14g%c%9d";
 	  break;
 	}
-	fprintf(stdout, fmt, i+1, opts->c, bkg->cnts[i], opts->c, bkg->area[i]);
-	fprintf(stdout, "\n");
+	fprintf(opts->fd, fmt, i+1, opts->c, bkg->cnts[i], opts->c, bkg->area[i]);
+	fprintf(opts->fd, "\n");
       }
     }
     break;
   }
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  fprintf(opts->fd, "\n");
+  fflush(opts->fd);
+}
+
+/* display results header */
+static void regcntsDisplayHeaderJSON(Opts opts, Data src, Data bkg, Res res){
+  char *s;
+  /* display source header information */
+  fprintf(opts->fd, "{\n");
+  fprintf(opts->fd, "  \"source\": {\n");
+  if( opts->bin != 1 ){
+    fprintf(opts->fd, "    \"autoBlock\": %d,\n", opts->bin);
+  }
+  if( src->dpp > 0.0 ){
+    fprintf(opts->fd, "    \"arcsecPerPixel\": %g,\n", src->dpp*ASEC_DEG);
+  }
+  fprintf(opts->fd, "    \"dataFile\": \"%s\"\n", src->name);
+  fprintf(opts->fd, "  },\n");
+  /* display bkgd header information */
+  fprintf(opts->fd, "  \"background\": {\n");
+  if( bkg->name ){
+    if( bkg->dpp > 0.0 ){
+      fprintf(opts->fd, "    \"arcsecPerPixel\": %g\n", bkg->dpp*ASEC_DEG);
+    }
+    if( res->dppnorm != 1.0 ){
+      fprintf(opts->fd, "    \"wcsAreaNormFactor\": \"%g/%g\",\n",
+	      src->dpp,bkg->dpp);
+    }
+    fprintf(opts->fd, "    \"dataFile\": \"%s\"\n", bkg->name);
+  } else if( opts->bktype != BKG_VAL ){
+    fprintf(opts->fd, "    \"dataFile\": \"%s\"\n", src->name);
+  } else {
+    fprintf(opts->fd, "    \"constantValue\": %.6f\n", res->bkgval);
+  }
+  fprintf(opts->fd, "  },\n");
+  /* dislay table information */
+  if( (src->dpp > 0.0) && !opts->dopixels ){
+    s = "arcsec";
+  } else {
+    s = "pixel";
+  }
+  fprintf(opts->fd, "  \"columnUnits\": {\n");
+  if( opts->doradang ){
+    fprintf(opts->fd, "    \"radii\": \"%ss\",\n", s);
+    fprintf(opts->fd, "    \"angles\": \"degrees\",\n");
+  }
+  fprintf(opts->fd, "    \"area\": \"%s**2\",\n", s);
+  fprintf(opts->fd, "    \"surfBrightness\": \"cnts/%s**2\",\n", s);
+  fprintf(opts->fd, "    \"surfError\": \"cnts/%s**2\"\n", s);
+  fprintf(opts->fd, "  },\n");
+}
+
+/* display main results info */
+static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
+  int i, j;
+  char *cradang=NULL;
+  char *tradang=NULL;
+  char *fmt=NULL;
+  char tbuf[SZ_LINE];
+  char *header[SZ_LINE];
+  switch( opts->dosum ){
+  case 1:
+    fprintf(opts->fd, "  \"summedBackgroundSubtractedResults\": [\n");
+    header[0] = "upto";
+    header[1] = "netCounts";
+    header[2] = "error";
+    break;
+  case 2:
+  default:
+    fprintf(opts->fd, "  \"backgroundSubtractedResults\": [\n");
+    header[0] = "reg";
+    header[1] = "netCounts";
+    header[2] = "error";
+    break;
+  }
+  header[3] = "background";
+  header[4] = "berror";
+  header[5] = "area";
+  header[6] = "surfBrightness";
+  header[7] = "surfError";
+  if( opts->doradang ){
+    header[8] = "radius1";
+    header[9] = "radius2";
+    header[10] = "angle1";
+    header[11] = "angle2";
+  }
+  if( res->radang ){
+    newdtable(",");
+  }
+  cradang = res->radang;
+  for(i=0; i<src->nreg; i++){
+    /* get next line from radii/angle string */
+    if( cradang ){
+      tradang = (char *)strchr(cradang, '\n');
+      if( tradang ){
+	*tradang = '\0';
+      }
+    }
+    if( src->area[i] ){
+      double cntsperarea;
+      double errperarea;
+      double areasq;
+      cntsperarea = res->bscnts[i]/src->area[i];
+      errperarea = res->bserr[i]/src->area[i];
+      areasq = src->area[i];
+      /* if we know how to convert to cnts/pix**2 to cnts/arcsec**2, do it */
+      if( !opts->dopixels && (src->dpp > 0.0) ){
+	cntsperarea = (cntsperarea / (src->dpp*src->dpp)) / ASEC_DEGSQ;
+	errperarea  = (errperarea  / (src->dpp*src->dpp)) / ASEC_DEGSQ;
+	areasq      = (areasq      * (src->dpp*src->dpp)) * ASEC_DEGSQ;
+      }
+      /* get correctly precisioned format statement */
+      switch(opts->dog){
+      case 0:
+	fmt = "    {\"%s\": %d, \"%s\": %.3f, \"%s\": %.3f, \"%s\": %.3f, \"%s\": %.3f, \"%s\": %.2f, \"%s\": %.3f, \"%s\": %.3f";
+	break;
+      case 1:
+	fmt = "    {\"%s\": %4d, \"%s\": %.3g, \"%s\": %.3g, \"%s\": %.3g, \"%s\": %.3g, \"%s\": %.2g, \"%s\": %.3g, \"%s\": %.3g";
+	break;
+      case 2:
+	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g";
+	break;
+      }
+      fprintf(opts->fd, fmt,
+	      header[0], i+1,
+	      header[1], res->bscnts[i],
+	      header[2], res->bserr[i],
+	      header[3], res->bncnts[i],
+	      header[4], res->bnerr[i],
+	      header[5], areasq,
+	      header[6], cntsperarea,
+	      header[7], errperarea);
+      /* display values from this line of radii/angles */
+      if( opts->doradang && cradang ){
+	int ip=0;
+	double dval;
+	fprintf(opts->fd, ", ");
+	for(j=0; j<4; j++){
+	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
+	    dval = strtod(tbuf, NULL);
+	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
+	      fprintf(opts->fd, " \"%s\": %.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
+	    } else {
+	      fprintf(opts->fd, " \"%s\": %.3f", header[8+j], dval);
+	    }
+	  } else {
+	    fprintf(opts->fd, " \"%s\": %.9s", header[8+j], "\"NA\"");
+	  }
+	  if( j != 3 ){
+	    fprintf(opts->fd, ",");
+	  }
+	}
+      }
+      /* new-line at end  */
+      fprintf(opts->fd, "}");
+      if( i != (src->nreg-1) ){
+	fprintf(opts->fd, ",");
+      }
+      /* new-line at end  */
+      fprintf(opts->fd, "\n");
+    } else if( opts->dozero ){
+    /* might have to display zero area pixels */
+      /* get correctly precisioned format statement */
+      switch(opts->dog){
+      case 0:
+	fmt = "    {\"%s\": %4d, \"%s\": %12.3f, \"%s\": %9.3f, \"%s\": %12.3f, \"%s\": %9.3f, \"%s\": %9.2f, \"%s\": %9.3f, \"%s\": %9.3f";
+	break;
+      case 1:
+	fmt = "    {\"%s\": %4d, \"%s\": %12.3g, \"%s\": %9.3g, \"%s\": %12.3g, \"%s\": %9.3g, \"%s\": %9.2g, \"%s\": %9.3g, \"%s\": %9.3g";
+	break;
+      case 2:
+	fmt = "    {\"%s\": %4d, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g";
+	break;
+      }
+      fprintf(opts->fd, fmt,
+	      header[0], i+1,
+	      header[1], 0.0,
+	      header[2], 0.0,
+	      header[3], 0.0,
+	      header[4], 0.0,
+	      header[5], 0.0,
+	      header[6], 0.0,
+	      header[7], 0.0);
+      /* add the correct radii and angle info, to make plotting easier */
+      if( opts->doradang && cradang ){
+	int ip=0;
+	double dval;
+	fprintf(opts->fd, ", ");
+	for(j=0; j<4; j++){
+	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
+	    dval = strtod(tbuf, NULL);
+	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
+	      fprintf(opts->fd, " \"%s\": %9.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
+	    } else {
+	      fprintf(opts->fd, " \"%s\": %9.3f", header[8+j], dval);
+	    }
+	  } else {
+	    fprintf(opts->fd, " \"%s\": %9.9s", header[8+j], "\"NA\"");
+	  }
+	  if( j != 3 ){
+	    fprintf(opts->fd, ",");
+	  }
+	}
+      }
+      /* new-line at end  */
+      fprintf(opts->fd, "}");
+      if( i != (src->nreg-1) ){
+	fprintf(opts->fd, ",");
+      }
+      /* new-line at end  */
+      fprintf(opts->fd, "\n");
+    }
+    /* bump to next line of radii/angles */
+    if( tradang ){
+      cradang = tradang+1;
+      /* put back the cr in case we pass through again */
+      *tradang = '\n';
+    }
+  }
+  if( res->radang ){
+    freedtable();
+  }
+  fprintf(opts->fd, "  ],\n");
+  fflush(opts->fd);
+}
+
+/* display raw source info */
+static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
+  int i;
+  int tarea=0;
+  double tcnts=0;
+  char *fmt=NULL;
+  char *header[SZ_LINE];
+  /* display raw source counts */
+  if( opts->dosum ){
+    /* display source info */
+    if( src->filtstr ){
+      fprintf(opts->fd, "  \"sourceRegions\": ");
+      fprintf(opts->fd, " \"%s\",\n", src->filtstr);
+    }
+    fprintf(opts->fd, "  \"summedSourceData\": [\n");
+    header[0] = "reg";
+    header[1] = "counts";
+    header[2] = "pixels";
+    header[3] = "sumcnts";
+    header[4] = "sumpix";
+    for(i=0; i<src->nreg; i++){
+      tcnts += src->cnts[i];
+      tarea += src->area[i];
+      /* get correctly precisioned format statement */
+      switch(opts->dog){
+      case 0:
+	fmt = "    {\"%s\": %d, \"%s\": %.3f, \"%s\": %9d, \"%s\": %.3f, \"%s\": %d}";
+	break;
+      case 1:
+	fmt = "    {\"%s\": %d, \"%s\": %.3g, \"%s\": %d, \"%s\": %.3g, \"%s\": %d}";
+	break;
+      case 2:
+	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
+	break;
+      }
+      fprintf(opts->fd, fmt,
+	      header[0], i+1,
+	      header[1], src->cnts[i],
+	      header[2], src->area[i],
+	      header[3], tcnts,
+	      header[4], tarea);
+      if( i != (src->nreg-1) ){
+	fprintf(opts->fd, ",");
+      }
+      fprintf(opts->fd, "\n");
+    }
+  } else {
+    /* display source info */
+    if( src->filtstr ){
+      fprintf(opts->fd, "  \"sourceRegions\": ");
+      fprintf(opts->fd, " \"%s\",\n", src->filtstr);
+    }
+    fprintf(opts->fd, "  \"sourceData\": [\n");
+    header[0] = "reg";
+    header[1] = "counts";
+    header[2] = "pixels";
+    for(i=0; i<src->nreg; i++){
+      /* get correctly precisioned format statement */
+      switch(opts->dog){
+      case 0:
+	fmt = "    {\"%s\": %d, \"%s\": %.3f, \"%s\": %d}";
+	break;
+      case 1:
+	fmt = "    {\"%s\": %d, \"%s\": %.3g, \"%s\": %9d}";
+	break;
+      case 2:
+	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
+	break;
+      }
+      fprintf(opts->fd, fmt,
+	      header[0], i+1,
+	      header[1], src->cnts[i],
+	      header[2], src->area[i]);
+      if( i != (src->nreg-1) ){
+	fprintf(opts->fd, ",");
+      }
+      fprintf(opts->fd, "\n");
+    }
+  }
+  fprintf(opts->fd, "  ],\n");
+  fflush(opts->fd);
+}
+
+/* display raw background info */
+static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
+  int i;
+  char *fmt=NULL;
+  char *header[SZ_LINE];
+  /* display raw background info */
+  switch(opts->bktype){
+  case BKG_VAL:
+    break;
+  case BKG_ALL:
+    if( bkg->filtstr ){
+      fprintf(opts->fd, "  \"backgroundRegions\": ");
+      fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+    }
+    fprintf(opts->fd, "  \"backgroundData\": [\n");
+    header[0] = "reg";
+    header[1] = "counts";
+    header[2] = "pixels";
+    /* get correctly precisioned format statement */
+    switch(opts->dog){
+    case 0:
+      fmt = "    {\"%s\": %s, \"%s\": %.3f, \"%s\": %d}";
+      break;
+    case 1:
+      fmt = "    {\"%s\": %s, \"%s\": %.3g, \"%s\": %d}";
+      break;
+    case 2:
+      fmt = "    {\"%s\": %s, \"%s\": %.14g, \"%s\": %d}";
+      break;
+    }
+    fprintf(opts->fd, fmt,
+	    header[0], "\"all\"",
+	    header[1], res->bkgval,
+	    header[2], res->bkgarea);
+    fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "  ],\n");
+    break;
+  case BKG_EACH:
+    if( opts->dosum ){
+      int tarea=0;
+      double tcnts=0;
+      if( bkg->filtstr ){
+	fprintf(opts->fd, "  \"backgroundRegions\": ");
+	fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+      }
+      fprintf(opts->fd, "  \"summedBackgroundData\": [\n");
+      header[0] = "reg";
+      header[1] = "counts";
+      header[2] = "pixels";
+      header[3] = "sumcnts";
+      header[4] = "sumpix";
+      for(i=0; i<bkg->nreg; i++){
+	tcnts += bkg->cnts[i];
+	tarea += bkg->area[i];
+	/* get correctly precisioned format statement */
+	switch(opts->dog){
+	case 0:
+	  fmt = "    {\"%s\": %d, \"%s\": %.3f, \"%s\": %9d, \"%s\": %.3f, \"%s\": %d}";
+	  break;
+	case 1:
+	  fmt = "    {\"%s\": %d, \"%s\": %.3g, \"%s\": %d, \"%s\": %.3g, \"%s\": %d}";
+	  break;
+	case 2:
+	  fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
+	  break;
+	}
+	fprintf(opts->fd, fmt,
+		header[0], i+1,
+		header[1], bkg->cnts[i],
+		header[2], bkg->area[i],
+		header[3], tcnts,
+		header[4], tarea);
+	if( i != (bkg->nreg-1) ){
+	  fprintf(opts->fd, ",");
+	}
+	fprintf(opts->fd, "\n");
+      }
+    } else {
+      if( bkg->filtstr ){
+	fprintf(opts->fd, "  \"backgroundRegions\": ");
+	fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+      }
+      fprintf(opts->fd, "  \"backgroundData\": [\n");
+      header[0] = "reg";
+      header[1] = "counts";
+      header[2] = "pixels";
+      for(i=0; i<bkg->nreg; i++){
+	/* get correctly precisioned format statement */
+	switch(opts->dog){
+	case 0:
+	  fmt = "    {\"%s\": %d, \"%s\": %.3f, \"%s\": %9d}";
+	  break;
+	case 1:
+	  fmt = "    {\"%s\": %d, \"%s\": %.3g, \"%s\": %d}";
+	  break;
+	case 2:
+	  fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
+	  break;
+	}
+	fprintf(opts->fd, fmt,
+		header[0], i+1,
+		header[1], bkg->cnts[i],
+		header[2], bkg->area[i]);
+	if( i != (bkg->nreg-1) ){
+	  fprintf(opts->fd, ",");
+	}
+	fprintf(opts->fd, "\n");
+      }
+    }
+    fprintf(opts->fd, "  ],\n");
+    break;
+  }
+  fflush(opts->fd);
+}
+
+void regcntsDisplayEndJSON(Opts opts){
+  char tbuf[SZ_LINE];
+  time_t t = time(NULL);
+  struct tm *tm = localtime(&t);
+  strncpy(tbuf, asctime(tm), SZ_LINE-1);
+  tbuf[strlen(tbuf)-1] = '\0';
+  fprintf(opts->fd, "  \"date\": \"%s\"\n", tbuf);
+  fprintf(opts->fd, "}\n");
+  fflush(opts->fd);
+}
+
+/* display results header */
+void regcntsDisplayHeader(Opts opts, Data src, Data bkg, Res res){
+  switch(opts->otype){
+  case 0:
+    regcntsDisplayHeaderRDB(opts, src, bkg, res);
+    break;
+  case 1:
+    regcntsDisplayHeaderJSON(opts, src, bkg, res);
+    break;
+  }
+}
+
+/* display main results info */
+void regcntsDisplayMainInfo(Opts opts, Data src, Res res){
+  switch(opts->otype){
+  case 0:
+    regcntsDisplayMainInfoRDB(opts, src, res);
+    break;
+  case 1:
+    regcntsDisplayMainInfoJSON(opts, src, res);
+    break;
+  }
+}
+
+/* display raw source info */
+void regcntsDisplaySrcInfo(Opts opts, Data src){
+  switch(opts->otype){
+  case 0:
+    regcntsDisplaySrcInfoRDB(opts, src);
+    break;
+  case 1:
+    regcntsDisplaySrcInfoJSON(opts, src);
+    break;
+  }
+}
+
+/* display raw background info */
+void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res){
+  switch(opts->otype){
+  case 0:
+    regcntsDisplayBkgInfoRDB(opts, bkg, res);
+    break;
+  case 1:
+    regcntsDisplayBkgInfoJSON(opts, bkg, res);
+    break;
+  }
+}
+
+/* finish up display */
+void regcntsDisplayEnd(Opts opts){
+  switch(opts->otype){
+  case 0:
+    break;
+  case 1:
+    regcntsDisplayEndJSON(opts);
+    break;
+  }
 }

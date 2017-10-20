@@ -32,16 +32,27 @@ int DLClose(void *dl){
 
 #else
 
-void *DLOpen(char *name){
+/*
+* http://stackoverflow.com/questions/3599160/unused-parameter-warnings-in-c-code
+*/
+#ifndef UNUSED
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+#endif
+
+void *DLOpen(char *UNUSED(name)){
     xerror(stderr, "dynamic linking not available\n");
     return NULL;
 }
 
-void *DLSym(void *dl, char *name){
+void *DLSym(void *UNUSED(dl), char *UNUSED(name)){
     return NULL;
 }
 
-int DLClose(void *dl){
+int DLClose(void *UNUSED(dl)){
     return -1;
 }
 

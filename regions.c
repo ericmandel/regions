@@ -60,6 +60,91 @@ static char *_RegionsClip(char *regstr){
 /* special null region returned if by OpenRegions if there are no regions */
 Regions _null_region;
 
+/* make the string containing region initialization calls */
+char *_RegionsInitString(Regions reg){
+  char *ibuf, *iptr, *fptr;
+  char *s, *t;
+  char tbuf[SZ_LINE];
+  int paren=0;
+
+  ibuf = xcalloc(strlen(reg->filter)*10+1, sizeof(char));
+  /* make sure we have at least one shape */
+  if( !reg->nshape ){
+    return ibuf;
+  }
+  iptr = ibuf;
+  fptr = reg->filter;
+  if( reg->reg_prefix ){
+    snprintf(tbuf, SZ_LINE-1, "%sim", reg->reg_prefix);
+  } else {
+    strcpy(tbuf, "im");
+  }
+  while( *fptr ){
+    /* look for beginning of region routine */
+    if( !(s=strstr(fptr, tbuf)) ){
+      break;
+    }
+    t = s + strlen(tbuf);
+    if( !*t ){
+      break;
+    }
+    /* which is followed by a region and open paren */
+    if( strncmp(t, "annulus(", 8)    &&
+	strncmp(t, "box(", 4)        &&
+	strncmp(t, "circle(", 7)     &&
+	strncmp(t, "ellipse(", 8)    &&
+	strncmp(t, "line(", 5)       &&
+	strncmp(t, "panda(", 6)      &&
+	strncmp(t, "bpanda(", 7)     &&
+	strncmp(t, "cpanda(", 7)     &&
+	strncmp(t, "epanda(", 7)     &&
+	strncmp(t, "pie(", 4)        &&
+	strncmp(t, "qtpie(", 6)      &&
+	strncmp(t, "point(", 6)      &&
+	strncmp(t, "nannulus(", 9)   &&
+	strncmp(t, "nbox(", 5)       &&
+	strncmp(t, "ncircle(", 8)    &&
+	strncmp(t, "nellipse(", 9)   &&
+	strncmp(t, "npie(", 5)       &&
+	strncmp(t, "vannulus(", 9)   &&
+	strncmp(t, "vbox(", 5)       &&
+	strncmp(t, "vcircle(", 8)    &&
+	strncmp(t, "vellipse(", 9)   &&
+	strncmp(t, "vpie(", 5)       &&
+	strncmp(t, "vpoint(", 7)     &&
+	strncmp(t, "polygon(", 8)    &&
+	strncmp(t, "field(", 6)      &&
+	strncmp(t, "imagemask(", 10) ){
+      fptr = t;
+      continue;
+    }
+    /* copy region name up to open paren */
+    for(fptr=s; *fptr && *fptr!='('; fptr++){
+      *iptr++ = *fptr;
+    }
+    /* append init suffix */
+    *iptr++ = 'i';
+    /* copy the paren */
+    if( *fptr == '(' ){
+      *iptr++ = *fptr++;
+      paren++;
+    }
+    /* copy til end of region, i.e., when paren goes to 0 */
+    while( *fptr && paren ){
+      if( *fptr == '(' ){
+	paren++;
+      }
+      if( *fptr == ')' ){
+	paren--;
+      }
+      *iptr++ = *fptr++;
+    }
+    /* copy ';' */
+    *iptr++ = ';';
+  }
+  return ibuf;
+}
+
 /*
  *
  * public routines
@@ -143,6 +228,7 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
   /* determine which type of process execution we do */
   switch(reg->method){
   case METHOD_C:
+    RegionsProgLoad_C(reg);
     reg->ptype = DEFAULT_REGIONS_PTYPE;
     *tbuf = '\0';
     if( (s=(char *)getenv("REGIONS_PTYPE")) ){
@@ -162,8 +248,14 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
       }
     }
     break;
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    RegionsProgLoad_EM(reg);
+    reg->ptype = PTYPE_CONTAINED;
+    break;
+#endif
   default:
-    reg->ptype = PTYPE_PROCESS;
+    xerror(stderr, "unknown region filtering technique: %d\n", reg->method);
     break;
   }
   /* determine region paint mode */
@@ -281,6 +373,10 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
 	goto error;
     }
     break;
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    break;
+#endif
   default:
     goto error;
   }
@@ -309,43 +405,52 @@ int FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block,
   if( !reg || (reg == NOREGIONS) ){
     return 0;
   }
-  /* process filter request */
-  switch(reg->ptype){
-  case PTYPE_PROCESS:
-  case PTYPE_CONTAINED:
-    switch(reg->pipeos){
-    case PIPE_WIN32:
+  switch(reg->method){
+  case METHOD_C:
+    /* process filter request */
+    switch(reg->ptype){
+    case PTYPE_PROCESS:
+    case PTYPE_CONTAINED:
+      switch(reg->pipeos){
+      case PIPE_WIN32:
 #if defined(__CYGWIN__) || defined(__MINGW32__)
-      /* write command to process */
-      snprintf(tbuf, SZ_LINE-1, "%d %d %d %d %d\n", x0, x1, y0, y1, block);
-      WinProcessWrite(reg->ohandle, tbuf, (int)strlen(tbuf));
-      /* read back mask records */
-      *mask = WinProcessRead(reg->ihandle, NULL, -1, &got);
-      got /=  sizeof(RegionsMaskRec);
+	/* write command to process */
+	snprintf(tbuf, SZ_LINE-1, "%d %d %d %d %d\n", x0, x1, y0, y1, block);
+	WinProcessWrite(reg->ohandle, tbuf, (int)strlen(tbuf));
+	/* read back mask records */
+	*mask = WinProcessRead(reg->ihandle, NULL, -1, &got);
+	got /=  sizeof(RegionsMaskRec);
 #else
-      xerror(stderr, "internal error: no WinProcess without Windows");
-      return -1;
+	xerror(stderr, "internal error: no WinProcess without Windows");
+	return -1;
 #endif
+	break;
+      default:
+	/* write command to process */
+	snprintf(tbuf, SZ_LINE-1, "%d %d %d %d %d\n", x0, x1, y0, y1, block);
+	ProcessWrite(reg->ochan, tbuf, (int)strlen(tbuf));
+	/* read back mask records */
+	*mask = ProcessRead(reg->ichan, NULL, -1, &got);
+	got /=  sizeof(RegionsMaskRec);
+	break;
+      }
+      break;
+    case PTYPE_DYNAMIC:
+      if( (imrtn=(RegionsImageCall)DLSym(reg->dl, reg->pname)) ){
+	*mask = (*imrtn)(x0, x1, y0, y1, block, &got);
+      } else {
+	return -1;
+      }
       break;
     default:
-      /* write command to process */
-      snprintf(tbuf, SZ_LINE-1, "%d %d %d %d %d\n", x0, x1, y0, y1, block);
-      ProcessWrite(reg->ochan, tbuf, (int)strlen(tbuf));
-      /* read back mask records */
-      *mask = ProcessRead(reg->ichan, NULL, -1, &got);
-      got /=  sizeof(RegionsMaskRec);
-      break;
-    }
-    break;
-  case PTYPE_DYNAMIC:
-    if( (imrtn=(RegionsImageCall)DLSym(reg->dl, reg->pname)) ){
-      *mask = (*imrtn)(x0, x1, y0, y1, block, &got);
-    } else {
       return -1;
     }
     break;
-  default:
-    return -1;
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    *mask = FilterRegions_EM(reg, x0, x1, y0, y1, block, &got);
+    break;
+#endif
   }
   /* how many include regions? */
   if( nreg ){
@@ -366,38 +471,46 @@ int CloseRegions(Regions reg){
   if( !reg || (reg == NOREGIONS) ){
     return 0;
   }
-  switch(reg->ptype){
-  case PTYPE_PROCESS:
-  case PTYPE_CONTAINED:
-    /* close the regions process */
-    switch(reg->pipeos){
-    case PIPE_WIN32:
+  switch(reg->method){
+  case METHOD_C:
+    switch(reg->ptype){
+    case PTYPE_PROCESS:
+    case PTYPE_CONTAINED:
+      /* close the regions process */
+      switch(reg->pipeos){
+      case PIPE_WIN32:
 #if defined(__CYGWIN__) || defined(__MINGW32__)
-      if( reg->process ){
-	WinProcessClose(reg->process, &status);
-      }
+	if( reg->process ){
+	  WinProcessClose(reg->process, &status);
+	}
 #else
-      xerror(stderr, "internal error: no WinProcess without Windows");
+	xerror(stderr, "internal error: no WinProcess without Windows");
 #endif
+	break;
+      default:
+	if( reg->pid > 0 ){
+	  ProcessClose(reg->pid, &status);
+	}
+	break;
+      }
+      /* delete program */
+      if( reg->prog ){
+	unlink(reg->prog);
+      }
+      break;
+    case PTYPE_DYNAMIC:
+      if( reg->dl ){
+	status = DLClose(reg->dl);
+      }
       break;
     default:
-      if( reg->pid > 0 ){
-	ProcessClose(reg->pid, &status);
-      }
       break;
     }
-    /* delete program */
-    if( reg->prog ){
-      unlink(reg->prog);
-    }
     break;
-  case PTYPE_DYNAMIC:
-    if( reg->dl ){
-      status = DLClose(reg->dl);
-    }
+#if __EMSCRIPTEN__
+  case METHOD_EM:
     break;
-  default:
-    break;
+#endif
   }
   /* call any method-specific cleanup routines */
   RegionsProgClose(reg);

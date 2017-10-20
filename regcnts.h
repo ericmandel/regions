@@ -57,6 +57,8 @@ typedef struct optsRec {
   int doradang;
   int dosum;
   int dozero;
+  int otype;
+  FILE *fd;
 } *Opts, OptsRec;
 
 /* data record (src and bkg) */
@@ -117,6 +119,7 @@ void regcntsSubtractBkg(Opts opts, Data src, Data bkg, Res res);
 void regcntsDisplayMainInfo(Opts opts, Data src, Res res);
 void regcntsDisplaySrcInfo(Opts opts, Data src);
 void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res);
+void regcntsDisplayEnd(Opts opts);
 void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res);
 void regcntsErrchk(int status);
 

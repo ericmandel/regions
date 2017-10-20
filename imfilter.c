@@ -1,8 +1,11 @@
-/* for TEST: gcc -DTEST -g -o foo imfilter.c imregions.o -lm */
-#ifdef TEST
+#if defined(REGIONS_PTYPE) || defined(__EMSCRIPTEN__) || defined(REGIONS_TEST)
+
+/* testing: gcc -DREGIONS_TEST -Wall -g -o foo imfilter.c imregions.c -lm */
+#ifdef REGIONS_TEST
 #include <stdio.h>
 #include <math.h>
 #include "imregions.h"
+#define REGIONS_PTYPE "process"
 #define IMFILTRTN _FilterRegions
 #define NSHAPE 2
 #define FILTER ((imcircle(g,1,1,1,4,(double)x,(double)y,8.0,8.0,5.0)))&&(imcircle(g,2,2,0,1,(double)x,(double)y,8.0,8.0,3.0))
@@ -10,14 +13,32 @@
 #define FINIT imcirclei(g,1,1,1,4,(double)x,(double)y,8.0,8.0,5.0);imcirclei(g,2,2,0,1,(double)x,(double)y,8.0,8.0,3.0);
 #endif
 
+#if __EMSCRIPTEN__
+#include "regionsP.h"
+#include "imregions.h"
+#include <emscripten.h>
+#ifndef NSHAPE
+#define NSHAPE EM_ASM_INT_V({return window.Regions.NSHAPE();})
+#endif
+#ifndef FILTSTR
+#define FILTSTR ""
+#endif
+#ifndef FINIT
+#define FINIT EM_ASM_({window.Regions.FINIT($0,$1,$2);}, g, x, y)
+#endif
+#ifndef FILTER
+#define FILTER EM_ASM_INT({return window.Regions.FILTER($0,$1,$2);}, g, x, y)
+#endif
+#endif
+
 /* global mask info */
 #define MASKINC	10240
-RegionsMask masks=NULL;		/* array valid region masks for one row */
-int maxmask;			/* max masks allocated thus far */
-int nmask;			/* number of mask segments */
+static RegionsMask masks=NULL;	/* array valid region masks for one row */
+static int maxmask;		/* max masks allocated thus far */
+static int nmask;		/* number of mask segments */
 
 /* increase the number of available masks */
-void incnmask(void)
+static void incnmask(void)
 {
   int oldmax;
   if( ++nmask >= maxmask ){
@@ -28,35 +49,39 @@ void incnmask(void)
   }
 }
 
-/* filter image and return valid region segments in global masks var */
 RegionsMask IMFILTRTN(int txmin, int txmax, int tymin, int tymax, int tblock,
 		      int *got){
   int i, j;
   int rlen;
   int nreg;
+  int nshape;
+  int filter;
   int fieldonly;
   int x=0, y=0;
   int *rbuf;
   int *rptr;
+  char *filtstr=NULL;
   GReg g;
   Scan scan, tscan;
 
+  /* convenience variables */
+  nshape = NSHAPE;
+  filtstr = FILTSTR;
   /* start out pessimistically */
   nmask = 0;
-  /* make sure we have something to process */
-  if( NSHAPE <=0 ){
+  if( nshape <=0 ){
     if( got ){
       *got = 0;
     }
     return NULL;
   }
   /* optimization: see if we have only the field shape */
-  fieldonly = (NSHAPE==1) && strstr(FILTSTR, "field");
+  fieldonly = (nshape==1) && strstr(filtstr, "field");
   /* allocate space for the global rec, which is passed to region routines */
   g = (GReg)calloc(1, sizeof(GRegRec));
   /* allocate region records */
-  g->nshape = NSHAPE;
-  g->maxshape = (NSHAPE*(XSNO+1))+1;
+  g->nshape = nshape;
+  g->maxshape = (nshape*(XSNO+1))+1;
   g->shapes = (Shape)calloc(g->maxshape, sizeof(ShapeRec));
   /* make sure we start at 1 */
   g->block= max(1,tblock);
@@ -114,7 +139,8 @@ RegionsMask IMFILTRTN(int txmin, int txmax, int tymin, int tymax, int tblock,
 	  x++, rptr++){
 	/* get filter result, which is the region id or 0 */
 	g->rid = 0;
-	if( FILTER ){
+	filter = FILTER;
+	if( filter ){
 	  /* never change a region id to a -1 */
 	  if( *rptr == 0 ){
 	    nreg++;
@@ -187,13 +213,16 @@ RegionsMask IMFILTRTN(int txmin, int txmax, int tymin, int tymax, int tblock,
   return masks;
 }
 
+/* compile main routine if necessary */
+#if defined(REGIONS_PTYPE)
+
 /* slave routine gets a new section from the master and returns a region mask */
 int main(int argc, char **argv)
 {
   int i, txmin, txmax, tymin, tymax, tblock;
   char tbuf[SZ_LINE];
   char *s=NULL, *t=NULL, *u=NULL;
-#ifndef TEST
+#ifndef REGIONS_TEST
   int get, obytes;
 #endif
 #ifndef __MINGW32__
@@ -228,10 +257,10 @@ int main(int argc, char **argv)
     return 0;
   }
 #endif
-#ifdef TEST
+#ifdef REGIONS_TEST
   /* read next section from stdin */
   while( fgets(tbuf, SZ_LINE, stdin) ){
-#else  /* TEST */
+#else  /* REGIONS_TEST */
 #ifdef _WIN32
   /* read next section from master(windows version) */
   while((ReadFile(hStdin, &get, sizeof(int), &dwRead, NULL) != FALSE) && 
@@ -246,7 +275,7 @@ int main(int argc, char **argv)
       break;
     }
 #endif
-#endif /* TEST */
+#endif /* REGIONS_TEST */
     /* get section from input */
     if( sscanf(tbuf, "%d %d %d %d %d",
 	       &txmin, &txmax, &tymin, &tymax, &tblock) != 5 ){
@@ -254,7 +283,7 @@ int main(int argc, char **argv)
     }
     /* filter image section, returning results in globals: masks and nmask */
     IMFILTRTN(txmin, txmax, tymin, tymax, tblock, NULL);
-#ifdef TEST
+#ifdef REGIONS_TEST
     /* display segments for debugging */
     fprintf(stdout, "nmask=%d\n", nmask);
     for(i=0; i<nmask; i++){
@@ -262,7 +291,7 @@ int main(int argc, char **argv)
 	      masks[i].region, masks[i].xstart, masks[i].xstop, masks[i].y);
     }
     fflush(stdout);
-#else /* TEST */
+#else /* REGIONS_TEST */
     /* calculate size of data we will write to master */
     obytes =  nmask * sizeof(RegionsMaskRec);
 #ifdef _WIN32
@@ -274,14 +303,23 @@ int main(int argc, char **argv)
     write(1, &obytes, sizeof(int));
     write(1, masks, obytes);
 #endif
-#endif /* TEST */
+#endif /* REGIONS_TEST */
     /* free mask records */
     if( masks ){
       free(masks);
     }
   }
-#ifndef TEST
+#ifndef REGIONS_TEST
   unlink(argv[0]);
-#endif /* TEST */
+#endif /* REGIONS_TEST */
   return 0;
 }
+
+int has_imfilter = 1;
+
+#endif
+
+#else
+int has_imfilter = 0;
+
+#endif

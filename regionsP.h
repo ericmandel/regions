@@ -15,6 +15,10 @@
 #include "conf.h"
 #endif
 
+#if __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 /* avoid use of system -- its not secure */
 /* but we cannot use launch for the MinGW platform because the stdfiles
    support is missing in the launch_spawnvp() implementation of launch */
@@ -66,6 +70,7 @@
 
 /* define methods of program generation */
 #define METHOD_C	1
+#define METHOD_EM	2
 
 /* define types of regionsing process -- separate process, self-contained
    separate process, or dynamic load (if defined) */
@@ -78,7 +83,11 @@
 #define PIPE_WIN32	1
 
 /* defaults which can be overridden by environment variables */
+#if __EMSCRIPTEN__
+#define DEFAULT_REGIONS_METHOD METHOD_EM
+#else
 #define DEFAULT_REGIONS_METHOD METHOD_C
+#endif
 #ifdef USE_DL
 #define DEFAULT_REGIONS_PTYPE  PTYPE_DYNAMIC
 #else
@@ -139,7 +148,20 @@ char *RegionsLexRegion2(Regions reg, char *name);
 /* regprog_c.c */
 int RegionsProgLoad_C(Regions reg);
 
+#if __EMSCRIPTEN__
+/* regprog_em.c */
+int RegionsProgLoad_EM(Regions reg);
+RegionsMask FilterRegions_EM(Regions reg,
+			     int txmin, int txmax, int tymin, int tymax,
+			     int tblock, int *got);
+#endif
+
 /* imregions.c */
 void initimregions(void);
+
+/* imfilter.c */
+RegionsMask IMFILTRTN(int txmin, int txmax, int tymin, int tymax, int tblock,
+		      int *got);
+
 
 #endif /* __regionsP.h */

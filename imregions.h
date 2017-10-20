@@ -106,6 +106,9 @@ extern double fma (double, double, double);
 #define TOK_REG		(TOK_EREG|TOK_NREG|TOK_IREG)
 /* end of common defines */
 
+/* don't need these if we loaded regionsP.h */
+#ifndef	__regions_h
+
 /* the following record structure(s) must match those in regionsP.h */
 /* output mask struct */
 typedef struct regmasks {
@@ -114,6 +117,8 @@ typedef struct regmasks {
   int xstart, xstop;
 } *RegionsMask, RegionsMaskRec;
 /* end of common record structures */
+
+#endif
 
 /* scan line record structure */
 typedef struct scanrec{

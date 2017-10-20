@@ -19,7 +19,9 @@ void regcntsUsage (char *fname){
   fprintf(stderr, "  -g\t\t# output using nice g format\n");
   fprintf(stderr, "  -G\t\t# output using %%.14g format (maximum precision)\n");
   fprintf(stderr, "  -h\t\t# display this help\n");
+  fprintf(stderr, "  -j\t\t# output using JSON format(def: RDB format)\n");
   fprintf(stderr, "  -m\t\t# match individual source and bkgd regions\n");
+  fprintf(stderr, "  -o [ofile]\t# output filename (def: stdout)\n");
   fprintf(stderr, "  -p\t\t# output in pixels, even if wcs is present\n");
   fprintf(stderr, "  -r\t\t# output inner/outer radii (and angles) for annuli (and pandas)\n");
   fprintf(stderr, "  -s\t\t# output summed values\n");
@@ -45,6 +47,8 @@ void regcntsInitAlloc(Opts *opts, Data *src, Data *bkg, Res *res){
   (*opts)->bktype = BKG_VAL;
   (*opts)->c = ' ';
   (*opts)->bin = 1;
+  (*opts)->fd = stdout;
+  (*opts)->otype = 0;
   *src = xcalloc(1, sizeof(DataRec));
   (*src)->type = SRC;
   *bkg = xcalloc(1, sizeof(DataRec));
@@ -60,7 +64,7 @@ void regcntsParseArgs(int argc, char **argv,
   int args;
   char *s;
   /* process switch arguments */
-  while ((c = getopt(argc, argv, "b:gGhmprstz1")) != -1){
+  while ((c = getopt(argc, argv, "b:gGhjmo:prstz1")) != -1){
     switch(c){
     case 'b':
       opts->bin = atoi(optarg);
@@ -74,8 +78,17 @@ void regcntsParseArgs(int argc, char **argv,
     case 'h':
       regcntsUsage(argv[0]);
       break;
+    case 'j':
+      opts->otype = 1;
+      break;
     case 'm':
       opts->domatch = 1;
+      break;
+    case 'o':
+      opts->fd = fopen(optarg, "w");
+      if( !opts->fd ){
+	xerror(stderr, "could not open output file for writing: %s\n", optarg);
+      }
       break;
     case 'p':
       opts->dopixels = 1;

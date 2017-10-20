@@ -7,6 +7,8 @@ AC_CONFIG_SRCDIR([./regions.h])
 AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_RANLIB
+m4_include([m4/ac_prog_ar.m4])
+AC_PROG_AR
 AC_PROG_AWK
 AC_CHECK_FUNCS(setenv)
 AC_CHECK_SIZEOF([void *])
