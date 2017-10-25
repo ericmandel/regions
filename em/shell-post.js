@@ -87,5 +87,5 @@ imvpoint: function(){
 				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
 				Array.prototype.slice.call(arguments));
 },
-regcnts: Module.cwrap('regcnts', 'number', ['string', 'string', 'string', 'string'])
+regcnts: Module.cwrap('regcnts', 'string', ['string', 'string', 'string', 'string'])
 }

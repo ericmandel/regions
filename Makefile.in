@@ -83,7 +83,7 @@ CC  =		@CC@
 AC_FLAGS =	@DEFS@ @HAVE_DL@
 
 # extra includes
-EXTRA_INCS =	@EXTRA_INCS@
+EXTRA_INCS =	-Iutil -Iwcs @EXTRA_INCS@
 
 # To change the compiler switches, for example to change from -O
 # to -g, change the following line:

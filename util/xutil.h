@@ -3,6 +3,16 @@
 
 // https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Default-Includes.html#Default-Includes
 #include <stdio.h>
+#if __EMSCRIPTEN__
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <stdlib.h>
+# include <stddef.h>
+# include <string.h>
+# include <strings.h>
+# include <inttypes.h>
+# include <unistd.h>
+#else
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -34,6 +44,7 @@
 #endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
+#endif
 #endif
 
 #include <ctype.h>

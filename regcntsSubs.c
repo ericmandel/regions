@@ -63,6 +63,12 @@ void regcntsParseArgs(int argc, char **argv,
   int c;
   int args;
   char *s;
+
+#if __EMSCRIPTEN__
+  /* reset optind if it's being called repeatedly in EMSCRIPTEN environment */
+  optind = 1;
+#endif
+
   /* process switch arguments */
   while ((c = getopt(argc, argv, "b:gGhjmo:prstz1")) != -1){
     switch(c){

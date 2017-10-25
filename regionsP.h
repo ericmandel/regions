@@ -25,26 +25,28 @@
 #ifndef USE_LAUNCH
 #define USE_LAUNCH 1
 #endif
-#if HAVE_MINGW32
+#if HAVE_MINGW32 || defined(__EMSCRIPTEN__)
 #undef USE_LAUNCH
 #endif
 
+#include "xutil.h"
+#include "file.h"
+#include "find.h"
+#include "macro.h"
+#include "word.h"
+#include "strtod.h"
+#include "xalloc.h"
+#include "xerror.h"
+#include "mkrtemp.h"
+#if !defined(__EMSCRIPTEN__)
+#include "winprocess.h"
+#include "zprocess.h"
 #include "dl.h"
-#include "util/xutil.h"
-#include "util/file.h"
-#include "util/find.h"
-#include "util/macro.h"
-#include "util/word.h"
-#include "util/strtod.h"
-#include "util/mkrtemp.h"
-#include "util/xalloc.h"
-#include "util/xerror.h"
-#include "util/winprocess.h"
-#include "util/zprocess.h"
-#include "wcs/wcs.h"
 #ifdef USE_LAUNCH
-#include "util/xlaunch.h"
+#include "xlaunch.h"
 #endif
+#endif
+#include "wcs.h"
 
 #if HAVE_CYGWIN||HAVE_MINGW32
 #include <windows.h>

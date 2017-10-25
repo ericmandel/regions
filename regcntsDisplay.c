@@ -8,6 +8,7 @@
  *
  */
 
+#include <time.h>
 #include "regcnts.h"
 
 /* display results header */
@@ -391,6 +392,30 @@ static void regcntsDisplayBkgInfoRDB(Opts opts, Data bkg, Res res){
   fflush(opts->fd);
 }
 
+/* make (filter) string json-worthy */
+static char *escjason(char *s){
+  int i, j;
+  int slen = 0;
+  char *t = NULL;
+  if( s && *s ){
+    slen = strlen(s);
+  }
+  t = calloc(slen * 2 + 1, sizeof(char));
+  for(i=0, j=0; i<slen; i++){
+    if( s[i] == '"' ){
+      t[j++] = '\\';
+      t[j++] = s[i];
+    } else if( s[i] == '\n' ){
+      t[j++] = ';';
+      if( s[i+1] == '#' ) i++;
+    } else {
+      t[j++] = s[i];
+    }
+  }
+  t[j] = '\0';
+  return t;
+}
+
 /* display results header */
 static void regcntsDisplayHeaderJSON(Opts opts, Data src, Data bkg, Res res){
   char *s;
@@ -619,13 +644,16 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
   int tarea=0;
   double tcnts=0;
   char *fmt=NULL;
+  char *filtstr=NULL;
   char *header[SZ_LINE];
+  /* make filter string json-compatible */
+  if( src->filtstr ) filtstr = escjason(src->filtstr);
   /* display raw source counts */
   if( opts->dosum ){
     /* display source info */
-    if( src->filtstr ){
+    if( filtstr ){
       fprintf(opts->fd, "  \"sourceRegions\": ");
-      fprintf(opts->fd, " \"%s\",\n", src->filtstr);
+      fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
     fprintf(opts->fd, "  \"summedSourceData\": [\n");
     header[0] = "reg";
@@ -661,9 +689,9 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
     }
   } else {
     /* display source info */
-    if( src->filtstr ){
+    if( filtstr ){
       fprintf(opts->fd, "  \"sourceRegions\": ");
-      fprintf(opts->fd, " \"%s\",\n", src->filtstr);
+      fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
     fprintf(opts->fd, "  \"sourceData\": [\n");
     header[0] = "reg";
@@ -694,21 +722,25 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
   }
   fprintf(opts->fd, "  ],\n");
   fflush(opts->fd);
+  if( filtstr ) free(filtstr);
 }
 
 /* display raw background info */
 static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
   int i;
   char *fmt=NULL;
+  char *filtstr=NULL;
   char *header[SZ_LINE];
+  /* make filter string json-compatible */
+  if( bkg->filtstr ) filtstr = escjason(bkg->filtstr);
   /* display raw background info */
   switch(opts->bktype){
   case BKG_VAL:
     break;
   case BKG_ALL:
-    if( bkg->filtstr ){
+    if( filtstr ){
       fprintf(opts->fd, "  \"backgroundRegions\": ");
-      fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+      fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
     fprintf(opts->fd, "  \"backgroundData\": [\n");
     header[0] = "reg";
@@ -737,9 +769,9 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
     if( opts->dosum ){
       int tarea=0;
       double tcnts=0;
-      if( bkg->filtstr ){
+      if( filtstr ){
 	fprintf(opts->fd, "  \"backgroundRegions\": ");
-	fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+	fprintf(opts->fd, " \"%s\",\n", filtstr);
       }
       fprintf(opts->fd, "  \"summedBackgroundData\": [\n");
       header[0] = "reg";
@@ -774,9 +806,9 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
 	fprintf(opts->fd, "\n");
       }
     } else {
-      if( bkg->filtstr ){
+      if( filtstr ){
 	fprintf(opts->fd, "  \"backgroundRegions\": ");
-	fprintf(opts->fd, " \"%s\",\n", bkg->filtstr);
+	fprintf(opts->fd, " \"%s\",\n", filtstr);
       }
       fprintf(opts->fd, "  \"backgroundData\": [\n");
       header[0] = "reg";
@@ -809,6 +841,7 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
     break;
   }
   fflush(opts->fd);
+  if( filtstr ) free(filtstr);
 }
 
 void regcntsDisplayEndJSON(Opts opts){

@@ -227,6 +227,12 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
   }
   /* determine which type of process execution we do */
   switch(reg->method){
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    RegionsProgLoad_EM(reg);
+    reg->ptype = PTYPE_CONTAINED;
+    break;
+#else
   case METHOD_C:
     RegionsProgLoad_C(reg);
     reg->ptype = DEFAULT_REGIONS_PTYPE;
@@ -247,11 +253,6 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
 	reg->ptype = PTYPE_DYNAMIC;
       }
     }
-    break;
-#if __EMSCRIPTEN__
-  case METHOD_EM:
-    RegionsProgLoad_EM(reg);
-    reg->ptype = PTYPE_CONTAINED;
     break;
 #endif
   default:
@@ -340,6 +341,10 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
   }
   // open the filter process or load the dynamic object
   switch(reg->method){
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    break;
+#else
   case METHOD_C:
     switch(reg->ptype){
     case PTYPE_PROCESS:
@@ -373,9 +378,6 @@ Regions OpenRegions(char *cards, char *regstr, char *mode){
 	goto error;
     }
     break;
-#if __EMSCRIPTEN__
-  case METHOD_EM:
-    break;
 #endif
   default:
     goto error;
@@ -406,6 +408,11 @@ int FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block,
     return 0;
   }
   switch(reg->method){
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    *mask = FilterRegions_EM(reg, x0, x1, y0, y1, block, &got);
+    break;
+#else
   case METHOD_C:
     /* process filter request */
     switch(reg->ptype){
@@ -446,10 +453,6 @@ int FilterRegions(Regions reg, int x0, int x1, int y0, int y1, int block,
       return -1;
     }
     break;
-#if __EMSCRIPTEN__
-  case METHOD_EM:
-    *mask = FilterRegions_EM(reg, x0, x1, y0, y1, block, &got);
-    break;
 #endif
   }
   /* how many include regions? */
@@ -472,6 +475,10 @@ int CloseRegions(Regions reg){
     return 0;
   }
   switch(reg->method){
+#if __EMSCRIPTEN__
+  case METHOD_EM:
+    break;
+#else
   case METHOD_C:
     switch(reg->ptype){
     case PTYPE_PROCESS:
@@ -506,9 +513,6 @@ int CloseRegions(Regions reg){
     default:
       break;
     }
-    break;
-#if __EMSCRIPTEN__
-  case METHOD_EM:
     break;
 #endif
   }

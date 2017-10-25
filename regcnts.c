@@ -4,43 +4,12 @@
 
 #include "regcnts.h"
 
-#define MAX_ARGS 10
-
 #if __EMSCRIPTEN__
-int _regcnts (int argc, char **argv);
-
-int regcnts(char *iname, char *sregion, char *bregion, char *cmdswitches){
-  int i=0, j=0;
-  char *targs=NULL, *targ=NULL;
-  char *args[SZ_LINE];
-  char tbufs[MAX_ARGS][SZ_LINE];
-  char ipath[SZ_LINE];
-  args[i++] = "_regcnts";
-  if( cmdswitches && *cmdswitches ){
-    targs = (char *)strdup(cmdswitches);
-    for(targ=(char *)strtok(targs, " \t"); targ != NULL;
-	targ=(char *)strtok(NULL," \t")){
-      if( j < MAX_ARGS ){
-	strncpy(tbufs[j], targ, SZ_LINE-1);
-	args[i++] = tbufs[j++];
-      } else {
-	break;
-      }
-    }
-    if( targs ) free(targs);
-  }
-  snprintf(ipath, SZ_LINE-1, "/%s", iname);
-  args[i++] = ipath;
-  args[i++] = sregion;
-  args[i++] = bregion;
-  /* make the low-level call */
-  return _regcnts(i, args);
-}
-
 int _regcnts (int argc, char **argv){
 #else
 int main (int argc, char **argv){
 #endif
+
   Opts opts=NULL;
   Data src=NULL;
   Data bkg=NULL;
