@@ -3498,7 +3498,7 @@ echo "$as_me: error: cannot find CFITSIO library files" >&2;}
     EXTRA_INCS="$EXTRA_INCS -I$CFITSIOINC"
   fi
   if test x$CFITSIOLIB != x; then
-    EXTRA_LIBS="$EXTRA_LIBS -L$CFITSIOLIB -lcfitsio"
+    EXTRA_LIBS="$EXTRA_LIBS -L$CFITSIOLIB -lcfitsio -lcurl"
   fi
 fi
 if test x"$havelib" = x0 ; then
@@ -3573,7 +3573,7 @@ else
 fi
 
   if test x"$havelib" = x1 ; then
-    EXTRA_LIBS="$EXTRA_LIBS -lcfitsio"
+    EXTRA_LIBS="$EXTRA_LIBS -lcfitsio -lcurl"
   else
     { { echo "$as_me:$LINENO: error: --with-cfitsio=<path> is required to specify the CFITSIO library" >&5
 echo "$as_me: error: --with-cfitsio=<path> is required to specify the CFITSIO library" >&2;}
