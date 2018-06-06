@@ -53,13 +53,13 @@ if test x"$havelib" = x1 ; then
     EXTRA_INCS="$EXTRA_INCS -I$CFITSIOINC"
   fi
   if test x$CFITSIOLIB != x; then
-    EXTRA_LIBS="$EXTRA_LIBS -L$CFITSIOLIB -lcfitsio"
+    EXTRA_LIBS="$EXTRA_LIBS -L$CFITSIOLIB -lcfitsio -lcurl"
   fi
 fi
 if test x"$havelib" = x0 ; then
   AC_CHECK_LIB(cfitsio, ffopentest, havelib=1, havelib=0, -lm)
   if test x"$havelib" = x1 ; then
-    EXTRA_LIBS="$EXTRA_LIBS -lcfitsio"
+    EXTRA_LIBS="$EXTRA_LIBS -lcfitsio -lcurl"
   else
     AC_MSG_ERROR([--with-cfitsio=<path> is required to specify the CFITSIO library])
   fi
