@@ -19,6 +19,9 @@
 #include <emscripten.h>
 #endif
 
+/* give same results as funtools (phys coords are 0.5 off from cfitsio) */
+#define FUNTOOLS_COMPATIBILITY 1
+
 /* avoid use of system -- its not secure */
 /* but we cannot use launch for the MinGW platform because the stdfiles
    support is missing in the launch_spawnvp() implementation of launch */

@@ -4376,6 +4376,14 @@ static void lcx_init(char *cards, double lcxm[3][2]){
   if( !cards || !hgetr8(cards, "LTV2", &lcxm[2][1]) ){
     lcxm[2][1] = 0.0;
   }
+#if FUNTOOLS_COMPATIBILITY
+  if( (lcxm[0][0] == 1.0) && (lcxm[0][1] == 0.0) && (lcxm[2][0] == 0.5) ){
+    lcxm[2][0] = 0.0;
+  }
+  if( (lcxm[0][1] == 0.0) && (lcxm[1][1] == 1.0) && (lcxm[2][1] == 0.5) ){
+    lcxm[2][1] = 0.0;
+  }
+#endif
 }
 
 /* lcx: convert physical to image position */
