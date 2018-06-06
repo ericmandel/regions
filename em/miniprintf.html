@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="miniprintf.js"></script>
+<script>
+  function test(){
+    var i;
+    for(i=0; i<3; i++){
+        // canonical case: string/int/double with no repeating arguments
+        Module.ccall_varargs("miniprintf", "null", ["string", ["sid"]], ["Hello %s: %d %f\n", "world", i, i + (i/10)]);
+        // same as above with explicitly empty repeat list
+        Module.ccall_varargs("miniprintf", "null", ["string", ["sid", ""]], ["Hello %s: %d %f\n", "world", i, i + (i/10)]);
+        // non-repeating string/int, then repeating double/int/string triplets
+        Module.ccall_varargs("miniprintf", "null", ["string", ["si", "dis"]], ["%s %d:      %f %d %s %f %d %s\n", "iter ", i, 1.234 + i, 2, "foo1", 3.14159, -100, "goo1"]);
+        // no non-repeating args, then repeating double/int/string triplets
+        Module.ccall_varargs("miniprintf", "null", ["string", ["", "dis"]], ["same as above %f %d %s %f %d %s\n", 1.234 + i, 2, "foo1", 3.14159, -100, "goo1"]);
+    }
+  }
+</script>
+</body>
+</html>

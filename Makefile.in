@@ -182,7 +182,7 @@ INCS =		regions.h
 INCP =		regionsP.h
 
 LIBOBJS	=	$(ROBJS) $(WOBJS) $(UOBJS)
-EMLIBOBJS =	$(ROBJS) $(UOBJS)
+EMLIBOBJS =	$(ROBJS) $(OBJS)
 
 IDIRS =		$(LIB_INSTALL_DIR) $(INCLUDE_INSTALL_DIR) $(BIN_INSTALL_DIR)
 
@@ -203,7 +203,7 @@ libregions.a:	$(LIBOBJS) $(INCS) $(INCP)
 		$(RANLIB) $@
 
 libregions_em.a:$(EMLIBOBJS) $(INCS) $(INCP)
-		$(AR) cruv libregions.a $?
+		$(AR) cruv libregions.a $(EMLIBOBJS)
 		$(RANLIB) libregions.a
 
 # automatic variables defined in:

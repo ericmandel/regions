@@ -24,27 +24,27 @@ imnpiei: Module.cwrap('imnpiei', 'number', [ 'number', 'number', 'number', 'numb
 impolygoni: Module.cwrap('impolygoni', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number']),
 imvannulusi: function(){
     return Module.ccall_varargs('imvannulusi', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', '[d+]'],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 			       Array.prototype.slice.call(arguments));
 },
 imvboxi: function(){
     return Module.ccall_varargs('imvboxi', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', '[d+]'],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 			       Array.prototype.slice.call(arguments));
 },
 imvellipsei: function(){
     return Module.ccall_varargs('imvellipsei', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', '[d+]'],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 			       Array.prototype.slice.call(arguments));
 },
 imvpiei: function(){
     return Module.ccall_varargs('imvpiei', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', '[d+]'],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 			       Array.prototype.slice.call(arguments));
 },
 imvpointi: function(){
     return Module.ccall_varargs('imvpointi', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', '[d+]'],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 			       Array.prototype.slice.call(arguments));
 },
 imannulus: Module.cwrap('imannulus', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
@@ -64,27 +64,27 @@ imnpie: Module.cwrap('imnpie', 'number', [ 'number', 'number', 'number', 'number
 impolygon: Module.cwrap('impolygon', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number']),
 imvannulus: function(){
     return Module.ccall_varargs('imvannulus', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 				Array.prototype.slice.call(arguments));
 },
 imvbox: function(){
     return Module.ccall_varargs('imvbox', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 				Array.prototype.slice.call(arguments));
 },
 imvellipse: function(){
     return Module.ccall_varargs('imvellipse', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 				Array.prototype.slice.call(arguments));
 },
 imvpie: function(){
     return Module.ccall_varargs('imvpie', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 				Array.prototype.slice.call(arguments));
 },
 imvpoint: function(){
     return Module.ccall_varargs('imvpoint', 'number',
-				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', [[],['d']]],
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
 				Array.prototype.slice.call(arguments));
 },
 regcnts: Module.cwrap('regcnts', 'string', ['string', 'string', 'string', 'string'])
