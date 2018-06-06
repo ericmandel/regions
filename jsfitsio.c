@@ -180,12 +180,14 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
 // this is how xray binary tables are imaged automatically
 fitsfile *gotoFITSHDU(fitsfile *fptr, char *extlist, int *hdutype, int *status){
   int hdunum, naxis, thdutype, gotext=0;
+  long naxes[IDIM] = {0, 0, 0, 0};
   char *ext, *textlist;
   // if this is the primary array and it does not contain an image,
   // try to move to something more reasonble
   fits_get_hdu_num(fptr, &hdunum); *status = 0;
   fits_get_img_dim(fptr, &naxis, status); *status = 0;
-  if( (hdunum == 1) && (naxis == 0) ){
+  fits_get_img_size(fptr, min(IDIM,naxis), naxes, status); *status = 0;
+  if( (hdunum == 1) && ((naxis == 0) || naxes[0] == 0) ){
     // look through the extension list
     if( extlist ){
       gotext = 0;
@@ -238,31 +240,39 @@ fitsfile *openFITSMem(void **buf, size_t *buflen, char *extlist,
   return gotoFITSHDU(fptr, extlist, hdutype, status);
 }
 
+// update/add WCS params
 // update/add LTM and LTV header params
 // ftp://iraf.noao.edu/iraf/web/projects/fitswcs/specwcs.html
-void updateLTM(fitsfile *fptr, fitsfile *ofptr,
-	       int xcen, int ycen, int dim1, int dim2, int bin, int dowcs){
+void updateWCS(fitsfile *fptr, fitsfile *ofptr,
+	       int xcen, int ycen, int dim1, int dim2, int bin,
+	       float *amin){
   int status;
   double x1, y1;
   double dval;
   char comment[FLEN_CARD];
-  /* use 0-index. is this correct? */
-  x1 = (int)(xcen - (dim1 / 2.0));
-  y1 = (int)(ycen - (dim2 / 2.0));
   if( !bin ){
     bin = 1;
   }
-  if( dowcs ){
+  // use amin to calculate CRPIX values, if present
+  if( amin != NULL ){
+    x1 = (double)amin[0];
+    y1 = (double)amin[1];
     dval = 0.0; *comment = '\0'; status = 0;
     fits_read_key(fptr, TDOUBLE, "CRPIX1", &dval, comment, &status);
     if( status == 0 ){
-      dval = (dval - x1) / bin;
+      // funtools-style: see funtools/funcopy.c/_FunCopy2ImageHeader
+      // dval = (dval + 1.0 - x1 - 0.5) / bin + 0.5;
+      // cfitsio-style: see cfitsio/histo.c
+      dval = (dval - x1) / bin + 0.5;
       fits_update_key(ofptr, TDOUBLE, "CRPIX1", &dval, comment, &status);
     }
     dval = 0.0; *comment = '\0'; status = 0;
     fits_read_key(fptr, TDOUBLE, "CRPIX2", &dval, comment, &status);
     if( status == 0 ){
-      dval = (dval - y1) / bin;
+      // funtools-style: see funtools/funcopy.c/_FunCopy2ImageHeader
+      // dval = (dval + 1.0 - y1 - 0.5) / bin + 0.5;
+      // cfitsio-style: see cfitsio/histo.c
+      dval = (dval - y1) / bin + 0.5;
       fits_update_key(ofptr, TDOUBLE, "CRPIX2", &dval, comment, &status);
     }
     dval = 0.0; *comment = '\0'; status = 0;
@@ -277,31 +287,66 @@ void updateLTM(fitsfile *fptr, fitsfile *ofptr,
       dval = dval * bin;
       fits_update_key(ofptr, TDOUBLE, "CDELT2", &dval, comment, &status);
     }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CD1_1", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CD1_1", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CD1_2", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CD1_2", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CD2_1", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CD2_1", &dval, comment, &status);
+    }
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "CD2_2", &dval, comment, &status);
+    if( status == 0 ){
+      dval = dval * bin;
+      fits_update_key(ofptr, TDOUBLE, "CD2_2", &dval, comment, &status);
+    }
   }
-  dval = 1.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
-  dval = dval / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
-  dval = 0.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
-  dval = dval / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
-  dval = 0.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
-  dval = dval / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
-  dval = 1.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
-  dval = dval / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
-  dval = 0.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTV1", &dval, comment, &status);
-  dval = (dval - x1) / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTV1", &dval, comment, &status);
-  dval = 0.0; *comment = '\0'; status = 0;
-  fits_read_key(fptr, TDOUBLE, "LTV2", &dval, comment, &status);
-  dval = (dval - y1) / bin; status = 0;
-  fits_update_key(ofptr, TDOUBLE, "LTV2", &dval, comment, &status);
+  // update ltm/ltv values, using center to calculate ltv values
+  if( dim1 && dim2 ){
+    x1 = (xcen - (dim1 / 2.0));
+    y1 = (ycen - (dim2 / 2.0));
+    dval = 1.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
+    dval = dval / bin; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTM1_1", &dval, comment, &status);
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
+    dval = dval / bin; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTM1_2", &dval, comment, &status);
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
+    dval = dval / bin; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTM2_1", &dval, comment, &status);
+    dval = 1.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
+    dval = dval / bin; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTM2_2", &dval, comment, &status);
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTV1", &dval, comment, &status);
+    // funtools-style: see funtools/funcopy.c/_FunCopy2ImageHeader
+    // dval = (dval + 1.0 - x1 - 0.5) / bin + 0.5; status = 0;
+    // cfitsio-style: see cfitsio/histo.c
+    dval = (dval - x1) / bin + 0.5; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTV1", &dval, comment, &status);
+    dval = 0.0; *comment = '\0'; status = 0;
+    fits_read_key(fptr, TDOUBLE, "LTV2", &dval, comment, &status);
+    // funtools-style: see funtools/funcopy.c/_FunCopy2ImageHeader
+    // dval = (dval + 1.0 - y1 - 0.5) / bin + 0.5; status = 0;
+    // cfitsio-style: see cfitsio/histo.c
+    dval = (dval - y1) / bin + 0.5; status = 0;
+    fits_update_key(ofptr, TDOUBLE, "LTV2", &dval, comment, &status);
+  }
 }
 
 // getImageToArray: extract a sub-section from an image HDU, return array
@@ -652,6 +697,7 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   float weight=1;
   double xcen, ycen;
   double minin[IDIM], maxin[IDIM], binsizein[IDIM];
+  char keyname[FLEN_KEYWORD];
   char param[FLEN_CARD];
   char comment[FLEN_CARD];
   char *rowselect=NULL;
@@ -747,11 +793,14 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   if( *status > 0 ){
     return(NULL);
   }
+  // add bin factor back into haxes to get table dimensions
+  haxes[0] = haxes[0] * bin;
+  haxes[1] = haxes[1] * bin;
   // why truncate to int? otherwise, cfitsio is 0.5 pixels off from js9 ...
-  xcen = (int)(amax[0] + amin[0])/2.0;
-  ycen = (int)(amax[1] + amin[1])/2.0;
+  xcen = (int)((amax[0] + amin[0])/2.0);
+  ycen = (int)((amax[1] + amin[1])/2.0);
   dim1 = haxes[0];
-  dim2 = haxes[0];
+  dim2 = haxes[1];
   // get limits of extracted section
   if( dims && dims[0] && dims[1] ){
     // read image section
@@ -768,8 +817,6 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
 	dim2 = dims[1];
       }
     }
-//    dim1 *= bin;
-//    dim2 *= bin;
     // min and max, indexed from 1
     minin[0] = (int)(xcen - (dim1/2.0));
     minin[1] = (int)(ycen - (dim2/2.0));
@@ -783,12 +830,31 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
   if( *status > 0 ){
     return NULL;
   }
+  // store original table info needed by JS9 in header
+  for(i=0; i<2; i++){
+    tstatus = 0;
+    ffkeyn("TFORM", colnum[i], keyname, &tstatus);
+    fits_read_key(fptr, TSTRING, keyname, param, comment, &tstatus);
+    ffkeyn("TABTYP", i+1, keyname, &tstatus);
+    fits_update_key(ofptr, TSTRING, keyname, param,
+		    "original table data type", &tstatus);
+    tstatus = 0;
+    ffkeyn("TABMIN", i+1, keyname, &tstatus);
+    fits_update_key(ofptr, TFLOAT, keyname, &amin[i],
+		    "original table lower bound", &tstatus);
+    tstatus = 0;
+    ffkeyn("TABMAX", i+1, keyname, &tstatus);
+    fits_update_key(ofptr, TFLOAT, keyname, &amax[i],
+		    "original table upper bound", &tstatus);
+    tstatus = 0;
+    ffkeyn("TABDIM", i+1, keyname, &tstatus);
+    fits_update_key(ofptr, TLONG, keyname, &haxes[i],
+		    "original table dimensions", &tstatus);
+  }
   // update/add LTM and LTV header params
-  updateLTM(fptr, ofptr, xcen, ycen, dim1, dim2, bin, 0);
+  updateWCS(fptr, ofptr, xcen, ycen, dim1, dim2, bin, NULL);
   // return the center and dims used
   if( dims ){
-//    dims[0] = dim1 / bin;
-//    dims[1] = dim2 / bin;
     dims[0] = dim1;
     dims[1] = dim2;
   }
@@ -803,7 +869,7 @@ fitsfile *filterTableToImage(fitsfile *fptr, char *filter, char **cols,
 }
 
 void getHeaderToString(fitsfile *fptr, char **cardstr, int *ncard, int *status){
-  fits_convert_hdr2str(fptr, 1, NULL, 0, cardstr, ncard, status);
+  fits_convert_hdr2str(fptr, 0, NULL, 0, cardstr, ncard, status);
 }
 
 
