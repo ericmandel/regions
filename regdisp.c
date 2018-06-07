@@ -146,26 +146,26 @@ int main(int argc, char **argv){
     regdispUsage(argv[0]);
   }
   fptr = openFITSFile(argv[optind+0], READONLY, EXTLIST, &hdutype, &status);
-  regcntsErrchk(status);
+  regcntsErrchk(NULL, status);
   if( (x1 == 0) || (y1 == 0) ){
     switch(hdutype){
     case IMAGE_HDU:
       break;
     default:
       nfptr = filterTableToImage(fptr, NULL, NULL, NULL, NULL, 1, &status);
-      regcntsErrchk(status);
+      regcntsErrchk(NULL, status);
       closeFITSFile(fptr, &status);
-      regcntsErrchk(status);
+      regcntsErrchk(NULL, status);
       fptr = nfptr;
       break;
     }
     fits_get_img_size(fptr, 2, naxes, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(NULL, status);
     x1 = naxes[0];
     y1 = naxes[1];
   }
   getHeaderToString(fptr, &cards, &ncard, &status);
-  regcntsErrchk(status);
+  regcntsErrchk(NULL, status);
   if( args > 1 ){
     for(i=1; i<args; i++){
       doreg(cards, argv[optind+i], x0, x1, y0, y1, block, mode);
@@ -176,7 +176,7 @@ int main(int argc, char **argv){
     }
   }
   closeFITSFile(fptr, &status);
-  regcntsErrchk(status);
+  regcntsErrchk(NULL, status);
   xfree(cards);
   return 0;
 }

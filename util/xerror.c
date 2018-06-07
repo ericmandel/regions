@@ -22,6 +22,8 @@ static int _xerror = -1;
 static char _xwarnings[XBUFSZ];
 static int _xwarning = -1;
 
+static FILE *_xfd=NULL;
+
 /*
  *
  * xerrorstring -- return last exception string
@@ -41,6 +43,18 @@ int setxerror(int flag){
   oflag = _xerror;
   _xerror = flag;
   return oflag;
+}
+
+/*
+ *
+ * setxerrorfd -- override the xerror fd globally
+ *
+ */
+FILE *setxerrorfd(FILE *fd){
+  FILE *ofd;
+  ofd = _xfd;
+  _xfd = fd;
+  return ofd;
 }
 
 /*
@@ -70,6 +84,10 @@ void xerror(FILE *fd, char *format, ...){
     }
     snprintf(tbuf, SZ_LINE-1, "ERROR: %s", format);
     vsnprintf(_xerrors, SZ_LINE-1, tbuf, args);
+    /* if global _xfd is set, use that instead of the passed value */
+    if( _xfd != NULL ){
+      fd = _xfd;
+    } 
     /* if the error flag is positive, we output immediately */
     if( (fd != NULL) && _xerror ){
       fputs(_xerrors, fd);
@@ -117,6 +135,10 @@ void xwarning(FILE *fd, char *format, ...){
     }
     snprintf(tbuf, SZ_LINE-1, "WARNING: %s", format);
     vsnprintf(_xwarnings, SZ_LINE-1, tbuf, args);
+    /* if global _xfd is set, use that instead of the passed value */
+    if( _xfd != NULL ){
+      fd = _xfd;
+    } 
     /* if the warning flag is positive, we output immediately */
     if( (fd != NULL) && _xwarning ){
       fputs(_xwarnings, fd);

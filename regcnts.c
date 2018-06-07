@@ -49,11 +49,11 @@ int main (int argc, char **argv){
   /* final checks and initialization of result buffers */
   regcntsInitResults(opts, src, bkg, res);
   /* get the counts in each region */
-  regcntsCountsInRegions(src);
+  regcntsCountsInRegions(opts, src);
   /* process background data, if necessary */
   if( opts->bktype != BKG_VAL ){
     /* get the counts in each region */
-    regcntsCountsInRegions(bkg);
+    regcntsCountsInRegions(opts, bkg);
   }
   /* display header */
   regcntsDisplayHeader(opts, src, bkg, res);

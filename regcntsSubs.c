@@ -10,6 +10,8 @@
 
 #include "regcnts.h"
 
+extern int optind;
+
 /* the ever-present */
 void regcntsUsage (char *fname){
   fprintf(stderr, "usage: %s [switches] sname [sreg] [bname breg|breg|bcnts]\n",
@@ -31,9 +33,15 @@ void regcntsUsage (char *fname){
 }
 
 #ifdef USE_CFITSIO
-void regcntsErrchk(int status) {
+void regcntsErrchk(Opts opts, int status) {
+  FILE *fd;
   if(status){
-    fits_report_error(stderr, status);
+    if( opts ){
+      fd = opts->efd;
+    } else {
+      fd = stderr;
+    }
+    fits_report_error(fd, status);
     exit(status);
   }
 }
@@ -49,6 +57,7 @@ void regcntsInitAlloc(Opts *opts, Data *src, Data *bkg, Res *res){
   (*opts)->bin = 1;
   (*opts)->fd = stdout;
   (*opts)->otype = 0;
+  (*opts)->efd = stderr;
   *src = xcalloc(1, sizeof(DataRec));
   (*src)->type = SRC;
   *bkg = xcalloc(1, sizeof(DataRec));
@@ -70,10 +79,19 @@ void regcntsParseArgs(int argc, char **argv,
 #endif
 
   /* process switch arguments */
-  while ((c = getopt(argc, argv, "b:gGhjmo:prstz1")) != -1){
+  optind = 1;
+  while ((c = getopt(argc, argv, "b:e:gGhjmo:prstz1")) != -1){
     switch(c){
     case 'b':
       opts->bin = atoi(optarg);
+      break;
+    case 'e':
+      opts->efd = fopen(optarg, "w");
+      if( opts->efd ){
+	setxerrorfd(opts->efd);
+      } else {
+	xerror(stderr, "could not open error file for writing: %s\n", optarg);
+      }
       break;
     case 'g':
       opts->dog = 1;
@@ -167,7 +185,7 @@ void regcntsGetData(Opts opts, Data d){
   fitsfile *nfptr=NULL;
   /* open the source FITS file */
   d->fptr = openFITSFile(d->name, READONLY, EXTLIST, &hdutype, &status);
-  regcntsErrchk(status);
+  regcntsErrchk(opts, status);
   // process based on hdu type
   switch(hdutype){
   case IMAGE_HDU:
@@ -179,12 +197,12 @@ void regcntsGetData(Opts opts, Data d){
     }
     // get cards as a string
     getHeaderToString(d->fptr, &d->cards, &ncard, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
     // get image array
     if( opts->dodata ){
       d->data = getImageToArray(d->fptr, NULL, NULL, 1, NULL,
 				start, stop, &d->bitpix, &status);
-      regcntsErrchk(status);
+      regcntsErrchk(opts, status);
     }
     d->dim1 = stop[0] - start[0] + 1;
     d->dim2 = stop[1] - start[1] + 1;
@@ -193,21 +211,21 @@ void regcntsGetData(Opts opts, Data d){
     // image from table
     nfptr = filterTableToImage(d->fptr, 
 			       NULL, NULL, NULL, NULL, opts->bin, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
     // get cards as a string
     getHeaderToString(nfptr, &d->cards, &ncard, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
     if( opts->dodata ){
     // get image array
       d->data = getImageToArray(nfptr, NULL, NULL, 1, NULL,
 				start, stop, &d->bitpix, &status);
-      regcntsErrchk(status);
+      regcntsErrchk(opts, status);
       d->dim1 = stop[0] - start[0] + 1;
       d->dim2 = stop[1] - start[1] + 1;
       closeFITSFile(nfptr, &status);
     } else {
       closeFITSFile(d->fptr, &status);
-      regcntsErrchk(status);
+      regcntsErrchk(opts, status);
       d->fptr = nfptr;
     }
     break;
@@ -224,7 +242,7 @@ void regcntsGetData(Opts opts, Data d){
     d->block = 1;
   } else {
     fits_get_img_size(d->fptr, 2, naxes, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
     d->x0 = 1;
     d->x1 = naxes[0];
     d->y0 = 1;
@@ -340,7 +358,7 @@ void regcntsInitResults(Opts opts, Data src, Data bkg, Res res){
 }
 
 /* get counts in each region */
-void regcntsCountsInRegions(Data d){
+void regcntsCountsInRegions(Opts opts, Data d){
   int i, j, y, yoff;
   int lasty=-1;
 #ifdef USE_CFITSIO
@@ -421,7 +439,7 @@ void regcntsCountsInRegions(Data d){
 	fpixel[2] = 1;
 	fpixel[3] = 1;
 	fits_read_pix(d->fptr, TDOUBLE, fpixel, d->x1, 0, dbuf, 0, &status);
-	regcntsErrchk(status);
+	regcntsErrchk(opts, status);
 #elif USE_FUNTOOLS
 	if( !FunImageRowGet(d->fun, dbuf, y, y, "bitpix=-64") ){
 	  xerror(stderr, "can't FunImageRowGet: %d %s\n", y, d->name);
@@ -577,7 +595,7 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
 #ifdef USE_CFITSIO
   if( bkg->name && bkg->fptr  ){
     closeFITSFile(bkg->fptr, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
   }
 #elif USE_FUNTOOLS
   FunClose(bkg->fun); 
@@ -598,7 +616,7 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
 #ifdef USE_CFITSIO
   if( src->name && src->fptr  ){
     closeFITSFile(src->fptr, &status);
-    regcntsErrchk(status);
+    regcntsErrchk(opts, status);
   }
 #elif USE_FUNTOOLS
   FunClose(src->fun); 

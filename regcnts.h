@@ -59,6 +59,7 @@ typedef struct optsRec {
   int dozero;
   int otype;
   FILE *fd;
+  FILE *efd;
 } *Opts, OptsRec;
 
 /* data record (src and bkg) */
@@ -112,7 +113,7 @@ void regcntsGetData(Opts opts, Data d);
 void regcntsBkgDataFromSrc(Data src, Data bkg);
 int regcntsOpenRegions(Data d);
 void regcntsInitResults(Opts opts, Data src, Data bkg, Res res);
-void regcntsCountsInRegions(Data d);
+void regcntsCountsInRegions(Opts opts, Data d);
 void regcntsDisplayHeader(Opts opts, Data src, Data bkg, Res res);
 void regcntsSumCounts(Opts opts, Data src, Data bkg);
 void regcntsSubtractBkg(Opts opts, Data src, Data bkg, Res res);
@@ -121,6 +122,6 @@ void regcntsDisplaySrcInfo(Opts opts, Data src);
 void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res);
 void regcntsDisplayEnd(Opts opts);
 void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res);
-void regcntsErrchk(int status);
+void regcntsErrchk(Opts opts, int status);
 
 #endif
