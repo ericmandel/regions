@@ -15,9 +15,12 @@ regcnts  [switches] &lt;source_file&gt; [source_region] [bkgd_file] [bkgd_region
 <p>
 <pre>
   -b [n]        # bin factor for binary tables (make in-memory image smaller)
+  -e [efile]    # error filename (def: stderr)
   -g            # output using nice g format
   -G            # output using %.14g format (maximum precision)
+  -j            # output using JSON format (def: RDB format)
   -m            # match individual source and bkgd regions
+  -o [ofile]    # output filename (def: stdout)
   -p            # output in pixels, even if wcs is present
   -r            # output inner/outer radii (and angles) for annuli (and pandas)
   -s            # output summed values
@@ -365,7 +368,8 @@ The net rate (surface brightness) would then be:
 If the <b>-t</b> (rdb table) switch is used, the output will conform
 to starbase/rdb data base format: tabs will be inserted between
 columns rather than spaces and line-feed will be inserted between
-tables.
+tables. If the <b>-j</b> switch is used, the output will be a
+JSON-formatted string instead of a table.
 
 <p>
 It is important to note that <b>regcnts</b> is an image program, even

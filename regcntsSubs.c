@@ -18,10 +18,11 @@ void regcntsUsage (char *fname){
 	 fname);
   fprintf(stderr, "optional switches:\n");
   fprintf(stderr, "  -b [n]\t# bin factor for binary tables (make in-memory image smaller)\n");
+  fprintf(stderr, "  -e [efile]\t# error filename (def: stderr)\n");
   fprintf(stderr, "  -g\t\t# output using nice g format\n");
   fprintf(stderr, "  -G\t\t# output using %%.14g format (maximum precision)\n");
   fprintf(stderr, "  -h\t\t# display this help\n");
-  fprintf(stderr, "  -j\t\t# output using JSON format(def: RDB format)\n");
+  fprintf(stderr, "  -j\t\t# output using JSON format (def: RDB format)\n");
   fprintf(stderr, "  -m\t\t# match individual source and bkgd regions\n");
   fprintf(stderr, "  -o [ofile]\t# output filename (def: stdout)\n");
   fprintf(stderr, "  -p\t\t# output in pixels, even if wcs is present\n");
