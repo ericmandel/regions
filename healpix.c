@@ -109,7 +109,7 @@ fitsfile *healpixToImage(fitsfile *ifptr, int *status){
   hpxdat.ordering = 'R';
   hpxdat.layout   = 0;
   hpxdat.quad     = 0;
-  hpxdat.infile   = NULL;
+  hpxdat.infile   = "";
 
   /* sanity check */
   if( !ifptr ){
@@ -244,7 +244,7 @@ int HEALPixIn(struct healpix *hpxdat)
   int    anynul, hdutype, iaxis, nfound, status;
   long   firstpix, ipix, lastpix, naxis, *naxes = 0x0, nside = 0, repeat;
   float  *datap, nulval;
-  LONGLONG firstelem, irow, nelem, npix = 0, nrow = 0;
+  LONGLONG firstelem, irow, nelem = 0, npix = 0, nrow = 0;
   fitsfile *fptr;
 
   status = 0;
@@ -623,7 +623,7 @@ int HPXout(struct healpix *hpxdat)
   }
 
   /* Write history. */
-  if( hpxdat->infile != NULL ){
+  if( hpxdat->infile && *hpxdat->infile ){
     sprintf(history, "Original input file: %s", hpxdat->infile);
     fits_write_history(fptr, history, &status);
   }
@@ -720,7 +720,7 @@ int RINGidx(int nside, int facet, int rotn, int jmap, long *healidx)
   const int I0[] = { 1,  3, -3, -1,  0,  2,  4, -2,  1,  3, -3, -1};
   const int J0[] = { 1,  1,  1,  1,  0,  0,  0,  0, -1, -1, -1, -1};
 
-  int  i, i0, imap, j, j0, n2side, n8side, npj, npole, nside1;
+  int  i = 0, i0, imap, j = 0, j0, n2side, n8side, npj, npole, nside1;
   long *hp;
 
   n2side = 2 * nside;
