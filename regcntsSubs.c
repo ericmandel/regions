@@ -12,6 +12,14 @@
 
 extern int optind;
 
+#if __EMSCRIPTEN__
+/* static pointers to the "real" structs so we can clean up on exit */
+static Opts _opts=NULL;
+static Data _src=NULL;
+static Data _bkg=NULL;
+static Res _res=NULL;
+#endif
+
 /* the ever-present */
 void regcntsUsage (char *fname){
   fprintf(stderr, "usage: %s [switches] sname [sreg] [bname breg|breg|bcnts]\n",
@@ -44,9 +52,10 @@ void regcntsErrchk(Opts opts, int status) {
     }
     fits_report_error(fd, status);
     fflush(fd);
-    if( fd != stderr ){
-      fclose(fd);
-    }
+    /* use static pointers to clean up before exit */
+#if __EMSCRIPTEN__
+    regcntsCleanUp(_opts, _src, _bkg, _res);
+#endif
     exit(status);
   }
 }
@@ -69,6 +78,13 @@ void regcntsInitAlloc(Opts *opts, Data *src, Data *bkg, Res *res){
   (*bkg)->type = BKG;
   *res = xcalloc(1, sizeof(ResRec));
   (*res)->dppnorm = 1.0;
+#if __EMSCRIPTEN__
+  /* static pointers to the "real" structs so we can clean up on exit */
+  _opts = *opts;
+  _src = *src;
+  _bkg = *bkg;
+  _res = *res;
+#endif
 }
 
 /* parse command line arguments and figure out what src/bkg types we have */
@@ -612,7 +628,6 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
 #ifdef USE_CFITSIO
   if( bkg->name && bkg->fptr  ){
     closeFITSFile(bkg->fptr, &status);
-    regcntsErrchk(opts, status);
   }
 #elif USE_FUNTOOLS
   FunClose(bkg->fun); 
@@ -633,7 +648,6 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
 #ifdef USE_CFITSIO
   if( src->name && src->fptr  ){
     closeFITSFile(src->fptr, &status);
-    regcntsErrchk(opts, status);
   }
 #elif USE_FUNTOOLS
   FunClose(src->fun); 
