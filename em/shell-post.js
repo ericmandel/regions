@@ -21,7 +21,11 @@ imnannulusi: Module.cwrap('imnannulusi', 'number', [ 'number', 'number', 'number
 imnboxi: Module.cwrap('imnboxi', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
 imnellipsei: Module.cwrap('imnellipsei', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
 imnpiei: Module.cwrap('imnpiei', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
-impolygoni: Module.cwrap('impolygoni', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number']),
+impolygoni: function(){
+    return Module.ccall_varargs('impolygoni', 'number',
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
+				Array.prototype.slice.call(arguments));
+},
 imvannulusi: function(){
     return Module.ccall_varargs('imvannulusi', 'number',
 				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
@@ -61,7 +65,11 @@ imnannulus: Module.cwrap('imnannulus', 'number', [ 'number', 'number', 'number',
 imnbox: Module.cwrap('imnbox', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
 imnellipse: Module.cwrap('imnellipse', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']),
 imnpie: Module.cwrap('imnpie', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']), 
-impolygon: Module.cwrap('impolygon', 'number', [ 'number', 'number', 'number', 'number', 'number', 'number']),
+impolygon: function(){
+    return Module.ccall_varargs('impolygon', 'number',
+				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],
+				Array.prototype.slice.call(arguments));
+},
 imvannulus: function(){
     return Module.ccall_varargs('imvannulus', 'number',
 				[ 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', ['','d'] ],

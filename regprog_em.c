@@ -148,20 +148,20 @@ int RegionsProgLoad_EM(Regions reg){
 RegionsMask FilterRegions_EM(Regions reg,
 			     int txmin, int txmax, int tymin, int tymax,
 			     int tblock, int *got){
-  char *ibuf;
+  char *ibuf=NULL;
   /* make sure we have something to work with */
   if( !reg ){
     return 0;
   }
   ibuf = _RegionsInitString(reg);
-  EM_ASM_({
+  EM_ASM({
       if( typeof window.Regions !== 'object' ){
          window.Regions = {};
       }
       window.Regions.NSHAPE = function(){return $0};
-      window.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + Pointer_stringify($1) + ')');
-      window.Regions.FINIT =  new Function('g', 'x', 'y', Pointer_stringify($2));
-  }, reg->nshape, reg->filter, ibuf);
+      window.Regions.FINIT =  new Function('g', 'x', 'y', Pointer_stringify($1));
+      window.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + Pointer_stringify($2) + ')');
+  }, reg->nshape, ibuf, reg->filter);
   if( ibuf ) free(ibuf);
   // call the real filter routine
   return IMFILTRTN(txmin, txmax, tymin, tymax, tblock, got);

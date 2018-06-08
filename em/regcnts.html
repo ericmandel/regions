@@ -5,13 +5,44 @@
 <script src="regcnts.js"></script>
 
 <script>
-  function load(){
-  }
-  function test(){
-      console.log('circle, radius 1: Astroem.regcnts("snr.fits", "circle(512,512,1)", "", "-j")', );
-      Astroem.regcnts("snr.fits", "circle(512,512,1)", "", "-j");
-      console.log('varargs ellipse with background: Astroem.regcnts("snr.fits", "ellipse(512,512,10,20,20,30,30,40,40,50,50,60)", "ellipse(512,512,60,70)", "-j")');
-      Astroem.regcnts("snr.fits", "ellipse(512,512,10,20,20,30,30,40,40,50,50,60)", "ellipse(512,512,60,70)", "-j");
+  var rarr = [
+    "annulus 512 512 3 12",
+    "annulus 512 512 3 6 9 12",
+    "annulus 512 512 3 12 n=3",
+    "box 512 512 9 12",
+    "box 512 512 9 12 45",
+    "box 512 512 3 4 6 8 9 12 12 15 45",
+    "box 512 512 3 4 12 15 n=3",
+    "box 512 512 3 4 12 15 n=3 45",
+    "circle 512 512 10",
+    "ellipse 512 512 9 12",
+    "ellipse 512 512 9 12 45",
+    "ellipse 512 512 3 4 6 8 9 12 12 15 45",
+    "ellipse 512 512 3 4 12 15 n=3",
+    "line 502 504 516 518; line 502 518 516 504",
+    "panda(512 512 30 300 3 5 10 3)",
+    "circle(512,512,10) & pie(512 512 0 270)",
+    "circle(512,512,10)&pie(512 512 0 90 180 270)",
+    "circle(512,512,10)&pie(512 512 0 270 n=3)",
+    "polygon(512.0, 512.0, 531.0, 512.0, 519, 524, 502.0, 524.0, 522, 518)",
+    "point 512 512 514 514 516 516 518 518"
+  ];
+  var bkgd = "circle(513,314,30)";
+  function test(mode){
+      switch(mode){
+      case "bkgd":
+          for(i=0; i<rarr.length; i++){
+              console.log("testing: %s", rarr[i]);
+              console.log(Astroem.regcnts("snr.fits", rarr[i], bkgd, ""));
+          }
+          break;
+      default:
+          for(i=0; i<rarr.length; i++){
+              console.log("testing: %s", rarr[i]);
+              console.log(Astroem.regcnts("snr.fits", rarr[i], "", ""));
+          }
+          break;
+      }
   }
 </script>
 
