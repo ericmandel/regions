@@ -43,6 +43,10 @@ void regcntsErrchk(Opts opts, int status) {
       fd = stderr;
     }
     fits_report_error(fd, status);
+    fflush(fd);
+    if( fd != stderr ){
+      fclose(fd);
+    }
     exit(status);
   }
 }
@@ -576,6 +580,18 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
   int status = 0;
 #endif
   /* opts */
+  if( opts->efd ){
+    fflush(opts->efd);
+    if( opts->efd != stderr ){
+      fclose(opts->efd);
+    }
+  }
+  if( opts->fd ){
+    if( opts->fd != stdout ){
+      fflush(opts->fd);
+    }
+    fclose(opts->fd);
+  }
   xfree(opts);
   /* background data */
   xfree(bkg->cnts);
