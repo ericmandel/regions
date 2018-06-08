@@ -19,6 +19,7 @@ regdisp
 cimtest
 .DS_Store
 !wcs/Makefile
+!em/Makefile
 a.out.dSYM/
 tmp/
 notes/
