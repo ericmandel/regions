@@ -54,7 +54,7 @@ void regcntsErrchk(Opts opts, int status) {
     fflush(fd);
     /* use static pointers to clean up before exit */
 #if __EMSCRIPTEN__
-    regcntsCleanUp(_opts, _src, _bkg, _res);
+    regcntsExit();
 #endif
     exit(status);
   }
@@ -84,6 +84,7 @@ void regcntsInitAlloc(Opts *opts, Data *src, Data *bkg, Res *res){
   _src = *src;
   _bkg = *bkg;
   _res = *res;
+  setxerrorexit(regcntsExit);
 #endif
 }
 
@@ -588,6 +589,14 @@ void regcntsSubtractBkg(Opts opts, Data src, Data bkg, Res res){
     }
     break;
   }
+}
+
+/* routine to clean up on exit */
+void regcntsExit(void){
+#if __EMSCRIPTEN__
+  regcntsCleanUp(_opts, _src, _bkg, _res);
+#endif
+  return;
 }
 
 /* clean up */

@@ -23,6 +23,7 @@ static char _xwarnings[XBUFSZ];
 static int _xwarning = -1;
 
 static FILE *_xfd=NULL;
+static void (*_xexit)(void)=NULL;
 
 /*
  *
@@ -55,6 +56,16 @@ FILE *setxerrorfd(FILE *fd){
   ofd = _xfd;
   _xfd = fd;
   return ofd;
+}
+
+/*
+ *
+ * setxerrorexit -- set the routine to call before we exit
+ * (used to clean up when exiting in Emscripten, which does not call atexit())
+ *
+ */
+void setxerrorexit(void (*rtn)(void)){
+  _xexit = rtn;
 }
 
 /*
@@ -97,6 +108,9 @@ void xerror(FILE *fd, char *format, ...){
     if( _xerror >= 2 ){
       if( fd != stderr && fd != stdout ){
 	fclose(fd);
+      }
+      if( _xexit != NULL ){
+	(_xexit)();
       }
       exit(_xerror);
     }

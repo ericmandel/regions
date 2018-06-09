@@ -121,6 +121,7 @@ void regcntsDisplayMainInfo(Opts opts, Data src, Res res);
 void regcntsDisplaySrcInfo(Opts opts, Data src);
 void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res);
 void regcntsDisplayEnd(Opts opts);
+void regcntsExit(void);
 void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res);
 void regcntsErrchk(Opts opts, int status);
 
