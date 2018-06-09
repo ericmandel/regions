@@ -605,17 +605,17 @@ void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res){
   int status = 0;
 #endif
   /* opts */
-  if( opts->efd ){
+  if( opts->efd != NULL ){
     fflush(opts->efd);
-    if( opts->efd != stderr ){
+    if( opts->efd != stderr && opts->efd != stdout ){
       fclose(opts->efd);
     }
   }
-  if( opts->fd ){
-    if( opts->fd != stdout ){
-      fflush(opts->fd);
+  if( opts->fd != NULL ){
+    fflush(opts->fd);
+    if( opts->fd != stdout && opts->fd != stderr ){
+      fclose(opts->fd);
     }
-    fclose(opts->fd);
   }
   xfree(opts);
   /* background data */

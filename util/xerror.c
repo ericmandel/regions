@@ -106,9 +106,6 @@ void xerror(FILE *fd, char *format, ...){
     }
     /* if the error flag is set high, we exit */
     if( _xerror >= 2 ){
-      if( fd != stderr && fd != stdout ){
-	fclose(fd);
-      }
       if( _xexit != NULL ){
 	(_xexit)();
       }
