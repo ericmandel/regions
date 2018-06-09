@@ -25,7 +25,7 @@ case $name in
   saord*)
   ./configure 	$CF						\
 		--prefix=/soft/saord				\
-		--with-cfitsio=/proj/rd/linux64			\
+		--with-cfitsio=$HOME				\
       		CC=gcc CFLAGS="$PRODFLAGS"			\
  		$*
   ;;
@@ -33,7 +33,7 @@ case $name in
   bokhara*)
   ./configure 	$CF						\
 		--prefix=$HOME					\
-		--with-cfitsio=/proj/rd/linux64			\
+		--with-cfitsio=$HOME				\
   		CC=gcc CFLAGS="$DEVFLAGS"			\
  		$*
   ;;
