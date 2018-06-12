@@ -95,11 +95,6 @@ void regcntsParseArgs(int argc, char **argv,
   int args;
   char *s;
 
-#if __EMSCRIPTEN__
-  /* reset optind if it's being called repeatedly in EMSCRIPTEN environment */
-  optind = 1;
-#endif
-
   /* process switch arguments */
   optind = 1;
   while ((c = getopt(argc, argv, "b:e:gGhjmo:prstz1")) != -1){
@@ -394,7 +389,7 @@ void regcntsCountsInRegions(Opts opts, Data d){
   long long *lbuf;
   float *fbuf;
   double *dbuf;
-  if( d-> data ){
+  if( d->data ){
     /* loop through each mask, adding up counts and area */
     for(i=0; i<d->nmask; i++){
       y = d->masks[i].y;
