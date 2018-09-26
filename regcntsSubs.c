@@ -217,7 +217,7 @@ void regcntsGetData(Opts opts, Data d){
     regcntsErrchk(opts, status);
     // get image array
     if( opts->dodata ){
-      d->data = getImageToArray(d->fptr, NULL, NULL, 1, NULL,
+      d->data = getImageToArray(d->fptr, NULL, NULL, 1, 0, NULL,
 				start, stop, &d->bitpix, &status);
       regcntsErrchk(opts, status);
     }
@@ -234,7 +234,7 @@ void regcntsGetData(Opts opts, Data d){
     regcntsErrchk(opts, status);
     if( opts->dodata ){
     // get image array
-      d->data = getImageToArray(nfptr, NULL, NULL, 1, NULL,
+      d->data = getImageToArray(nfptr, NULL, NULL, 1, 0, NULL,
 				start, stop, &d->bitpix, &status);
       regcntsErrchk(opts, status);
       d->dim1 = stop[0] - start[0] + 1;
