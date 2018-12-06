@@ -408,16 +408,16 @@ void *getImageToArray(fitsfile *fptr, int *dims, double *cens,
     if( !strcmp(slice, "all") ){
       tslice = (char *)strdup("*:*:all");
     } else {
-      if( strchr(slice, ':') ){
+      if( strchr(slice, ':') || strchr(slice, ',') ){
 	tslice = (char *)strdup(slice);
       } else {
 	snprintf(tbuf, SZ_LINE, "*:*:%s", slice);
 	tslice = (char *)strdup(tbuf);
       }
     }
-    for(s=(char *)strtok(tslice, " :,"), nslice=0, idx=0;
+    for(s=(char *)strtok(tslice, ":,"), nslice=0, idx=0;
 	(s != NULL) && (nslice < IDIM);
-	s=(char *)strtok(NULL," :,"), nslice++){
+	s=(char *)strtok(NULL,":,"), nslice++){
       if( !strcmp(s, "*") ){
 	if( idx < 2 ){
 	  iaxes[idx++] = nslice;
