@@ -1,5 +1,5 @@
 /*
- *	Copyright (c) 2015 Smithsonian Astrophysical Observatory
+ *	Copyright (c) 2015-2018 Smithsonian Astrophysical Observatory
  */
 
 /*
@@ -31,6 +31,9 @@
 #define SRC  0
 #define BKG  1
 
+/* max image dimensions we can handle */
+#define IMDIM 4
+
 /* types of background */
 #define BKG_VAL	 1
 #define BKG_ALL	 2
@@ -50,6 +53,7 @@ typedef struct optsRec {
   int bktype;
   int c;
   int dobkgderr;
+  int docube;
   int dodata;
   int dog;
   int domatch;
@@ -58,6 +62,7 @@ typedef struct optsRec {
   int dosum;
   int dozero;
   int otype;
+  char *cube;
   FILE *fd;
   FILE *efd;
 } *Opts, OptsRec;
@@ -67,13 +72,18 @@ typedef struct dataRec {
   int type;
   int x0, x1, y0, y1;
   int dim1, bitpix;
+  int fromsrc;
 #if USE_CFITSIO
   int dim2;
+  int curslice;
+  int maxslice;
+  int szslice;
 #endif
   char *regstr;
   char *filtstr;
   char *name;
   char *cards;
+  void *data0;
   void *data;
   int block;
   int nmask;
@@ -122,6 +132,7 @@ void regcntsDisplaySrcInfo(Opts opts, Data src);
 void regcntsDisplayBkgInfo(Opts opts, Data bkg, Res res);
 void regcntsDisplayEnd(Opts opts);
 void regcntsExit(void);
+void regcntsClearArrays(Data d, Res res);
 void regcntsCleanUp(Opts opts, Data src, Data bkg, Res res);
 void regcntsErrchk(Opts opts, int status);
 

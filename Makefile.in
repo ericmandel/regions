@@ -190,7 +190,7 @@ all:		lib progs
 
 progs:		$(PROGS)
 
-tprogs:		$(TPROGS)
+test:		$(TPROGS)
 
 objs:		$(OBJS)
 

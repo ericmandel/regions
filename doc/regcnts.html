@@ -15,6 +15,7 @@ regcnts  [switches] &lt;source_file&gt; [source_region] [bkgd_file] [bkgd_region
 <p>
 <pre>
   -b [n]        # bin factor for binary tables (make in-memory image smaller)
+  -c [str]      # data slice ('*:*:1428') or cube ('all') specification string
   -e [efile]    # error filename (def: stderr)
   -g            # output using nice g format
   -G            # output using %.14g format (maximum precision)
@@ -368,7 +369,7 @@ The net rate (surface brightness) would then be:
 If the <b>-t</b> (rdb table) switch is used, the output will conform
 to starbase/rdb data base format: tabs will be inserted between
 columns rather than spaces and line-feed will be inserted between
-tables. If the <b>-j</b> switch is used, the output will be a
+tables. If the <b>-j</b> (json) switch is used, the output will be a
 JSON-formatted string instead of a table.
 
 <p>
@@ -383,7 +384,7 @@ cfitsio row-filter syntax.  For more information about boundary issues,
 see the discussion of <a href="./regbounds.html">Region Boundaries</a>.
 
 <p>
-Finally, <b>regcnts</b> works on FITS binary tables by asking the
+<b>Regcnts</b> works on FITS binary tables by asking the
 underlying cfitsio library to generate an in-memory FITS image.
 For some X-ray missions (e.g. XMM), the image dimensions of the data are huge
 (approx. 50k x 50K for XMM EPN). Trying to generate an in-memory image of that
@@ -401,6 +402,72 @@ or:
 Some day available memory will be infinite ... but not today.
 
 <p>
+Finally, note that <b>regcnts</b> works on 2D images and tables by default. You
+can process a 3D FITS cube by specifying the <b>-c [str]</b> (cube) switch,
+whose argument can take any of the following forms:
+<ul>
+<li><b>[n]</b>: process slice [n] in the 3rd dimension of the data cube
+<li><b>all</b>: process all slices in the 3rd dimension of the data cube
+<li><b>'*:*:[n]', '*:[n]:*', or '[n]:*:*'</b>: process slice [n] in the specified dimension of the data cube
+<li><b>'*:*:all', '*:all:*', or 'all:*:*'</b>: process all slices in the specified dimension of the data cube
+</ul>
+Thus, the following sets of commands are equivalent:
+<pre>
+  # process slice 1428 in dimension 3 of the data cube
+  regcnts -c 1428 cube.fits "circle(502,512,10)"
+  regcnts -c '*:*:1428' cube.fits "circle(502,512,10)"
+
+  # process all slices in dimension 3 of the data cube
+  regcnts -c all cube.fits "circle(502,512,10)"
+  regcnts -c '*:*:all' cube.fits "circle(502,512,10)"
+</pre>
+but you can specify any of the three dimensions as the cube dimension:
+<pre>
+  # process slice 1428 in dimension 2 of the data cube
+  regcnts -c '*:1428:*' cube.fits "circle(502,512,10)"
+
+  # process all slices in dimension 2 of the data cube
+  regcnts -c '*:all:*' cube.fits "circle(502,512,10)"
+</pre>
+If a whole data cube is processed, the results of each slice will be
+identified by the slice number, e.g.:
+<pre>
+  .... 17 slices previous to this one ...
+
+  # background-subtracted results #18
+   reg   net_counts     error   background    berror      area  surf_bri  surf_err
+  ---- ------------ --------- ------------ --------- --------- --------- ---------
+     1     1299.000    36.042        0.000     0.000  60516.00     0.021     0.001
+
+  # source_region(s):
+  # field()
+
+  # source_data
+   reg       counts    pixels
+  ---- ------------ ---------
+     1     1299.000    250000
+</pre>
+For a large number of slices, using the <b>-j</b> (json) switch might be the
+easiest way to access the individual slices:
+<pre>
+  "backgroundSubtractedResults18": [{
+  	"reg": 1,
+  	"netCounts": 1299.000,
+  	"error": 36.042,
+  	"background": 0.000,
+  	"berror": 0.000,
+  	"area": 60516.00,
+  	"surfBrightness": 0.021,
+  	"surfError": 0.001
+  }],
+  "sourceRegions18": "field()",
+  "sourceData18": [{
+  	"reg": 1,
+  	"counts": 1299.000,
+  	"pixels": 250000
+  }]
+</pre>
+
 <hr>
 Other pages of interest:
 <ul>

@@ -1,5 +1,5 @@
 /*
- *	Copyright (c) 2015 Smithsonian Astrophysical Observatory
+ *	Copyright (c) 2015-2018 Smithsonian Astrophysical Observatory
  */
 
 /*
@@ -26,6 +26,7 @@ void regcntsUsage (char *fname){
 	 fname);
   fprintf(stderr, "optional switches:\n");
   fprintf(stderr, "  -b [n]\t# bin factor for binary tables (make in-memory image smaller)\n");
+  fprintf(stderr, "  -c [str]\t# data slice ('*:*:1428') or cube ('all') specification string\n");
   fprintf(stderr, "  -e [efile]\t# error filename (def: stderr)\n");
   fprintf(stderr, "  -g\t\t# output using nice g format\n");
   fprintf(stderr, "  -G\t\t# output using %%.14g format (maximum precision)\n");
@@ -97,10 +98,17 @@ void regcntsParseArgs(int argc, char **argv,
 
   /* process switch arguments */
   optind = 1;
-  while ((c = getopt(argc, argv, "b:e:gGhjmo:prstz1")) != -1){
+  while ((c = getopt(argc, argv, "b:c:e:gGhjmo:prstz1")) != -1){
     switch(c){
     case 'b':
       opts->bin = atoi(optarg);
+      break;
+    case 'c':
+      opts->cube = optarg;
+      opts->dodata = 1;
+      if( strstr(opts->cube, "all") ){
+	opts->docube = 1;
+      }
       break;
     case 'e':
       opts->efd = fopen(optarg, "w");
@@ -195,10 +203,11 @@ void regcntsGetData(Opts opts, Data d){
   int ncard;
   int hdutype;
   int naxis;
-  int start[2];
-  int stop[2];
+  int start[IMDIM];
+  int stop[IMDIM];
   long naxes[2];
   int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */
+  char *cube=NULL;
   fitsfile *nfptr=NULL;
   /* open the source FITS file */
   d->fptr = openFITSFile(d->name, READONLY, EXTLIST, &hdutype, &status);
@@ -209,20 +218,38 @@ void regcntsGetData(Opts opts, Data d){
     // we can pny handle 2D images
     fits_get_img_dim(d->fptr, &naxis, &status);
     if( naxis != 2 ){
-      xerror(stderr, "For now, 2D images only (this image has %d)\n", naxis);
-      return;
+      if( naxis == 3 ){
+	if( !opts->cube ){
+	  xerror(stderr, "use -c to specify a slice or cube:\n  -c 1428       # process slice 1428 in third axis\n  -c all        # process entire cube along third axis\n  -c '*:1428:*' # process slice 1428 in second axis\n");
+	  return;
+	}
+      } else {
+	xerror(stderr, "2D or 3D images only (this image has %d)\n", naxis);
+	return;
+      }
     }
     // get cards as a string
     getHeaderToString(d->fptr, &d->cards, &ncard, &status);
     regcntsErrchk(opts, status);
     // get image array
     if( opts->dodata ){
-      d->data = getImageToArray(d->fptr, NULL, NULL, 1, 0, NULL,
-				start, stop, &d->bitpix, &status);
+      if( d->type == SRC || ((d->type == BKG) && d->fromsrc) ){
+	cube = opts->cube;
+      }
+      d->data = getImageToArray(d->fptr, NULL, NULL, 1, 0, cube,
+				 start, stop, &d->bitpix, &status);
       regcntsErrchk(opts, status);
     }
     d->dim1 = stop[0] - start[0] + 1;
     d->dim2 = stop[1] - start[1] + 1;
+    if( opts->docube ){
+      if( d->type == SRC || ((d->type == BKG) && d->fromsrc) ){
+	d->curslice = 0;
+	d->maxslice = stop[2] - start[2] + 1;
+	d->szslice = d->dim1 * d->dim2 * abs(d->bitpix) / 8;
+	d->data0 = d->data;
+      }
+    }
     break;
   default:
     // image from table
@@ -306,6 +333,7 @@ void regcntsBkgDataFromSrc(Data src, Data bkg){
   bkg->block = src->block;
   bkg->cards = src->cards;
   bkg->data = src->data;
+  bkg->fromsrc = 1;
 #if USE_CFITSIO
   bkg->fptr = src->fptr;
 #elif USE_FUNTOOLS
@@ -592,6 +620,24 @@ void regcntsExit(void){
   regcntsCleanUp(_opts, _src, _bkg, _res);
 #endif
   return;
+}
+
+/* clear arrays */
+void regcntsClearArrays(Data d, Res res){
+  if( d != NULL ){
+    /* clear src or bkg arrays */
+    memset((char *)d->cnts, 0, d->nreg * sizeof(double));
+    memset((char *)d->savecnts, 0, d->nreg * sizeof(double));
+    memset((char *)d->area, 0, d->nreg * sizeof(int));
+    memset((char *)d->savearea, 0, d->nreg * sizeof(int));
+    /* clear results arrays */
+    if( (d->type == SRC) && (res != NULL) ){
+      memset((char *)res->bncnts, 0, d->nreg * sizeof(double));
+      memset((char *)res->bnerr, 0, d->nreg * sizeof(double));
+      memset((char *)res->bscnts, 0, d->nreg * sizeof(double));
+      memset((char *)res->bserr, 0, d->nreg * sizeof(double));
+    }
+  }
 }
 
 /* clean up */

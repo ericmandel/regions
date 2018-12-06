@@ -48,6 +48,9 @@ int main (int argc, char **argv){
   }
   /* final checks and initialization of result buffers */
   regcntsInitResults(opts, src, bkg, res);
+  /* display header */
+  regcntsDisplayHeader(opts, src, bkg, res);
+cubeagain:
   /* get the counts in each region */
   regcntsCountsInRegions(opts, src);
   /* process background data, if necessary */
@@ -55,8 +58,6 @@ int main (int argc, char **argv){
     /* get the counts in each region */
     regcntsCountsInRegions(opts, bkg);
   }
-  /* display header */
-  regcntsDisplayHeader(opts, src, bkg, res);
   /* when summing, we first display the summed results, then the unsummed */
 sumagain:
   /* sum counts between regions, if necessary */
@@ -81,6 +82,37 @@ sumagain:
   regcntsDisplaySrcInfo(opts, src);
   /* display raw background info */
   regcntsDisplayBkgInfo(opts, bkg, res);
+  /* process next slice of cube, if necessary */
+  if( opts->docube ){
+    // next background slice
+    if( bkg->maxslice ){
+      bkg->curslice += 1;
+      if( bkg->curslice < bkg->maxslice ){
+	// point to next slice of data
+	bkg->data = bkg->data0 + (bkg->curslice * bkg->szslice);
+	// clear arrays
+	regcntsClearArrays(bkg, NULL);
+      } else {
+	// restore data so we can free it properly
+	bkg->data = bkg->data0;
+      }
+    }
+    // next source slice
+    if( src->maxslice ){
+      src->curslice += 1;
+      if( src->curslice < src->maxslice ){
+	// point to next slice of data
+	src->data = src->data0 + (src->curslice * src->szslice);
+	// clear arrays
+	regcntsClearArrays(src, res);
+	// process next slice
+	goto cubeagain;
+      } else {
+	// restore data so we can free it properly
+	src->data = src->data0;
+      }
+    }
+  }
   /* finish up display */
   regcntsDisplayEnd(opts);
   /* cleanup */

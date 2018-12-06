@@ -17,6 +17,10 @@ static void regcntsDisplayHeaderRDB(Opts opts, Data src, Data bkg, Res res){
   /* display source header information */
   fprintf(opts->fd, "# source\n");
   fprintf(opts->fd, "#   data_file:\t\t%s\n", src->name);
+  /* slice information */
+  if( opts->docube ){
+    fprintf(opts->fd, "#   cube_slices:\t%d\n", src->maxslice);
+  }
   if( opts->bin != 1 ){
     fprintf(opts->fd, "#   auto_block:\t\t%d\n", opts->bin);
   }
@@ -62,10 +66,18 @@ static void regcntsDisplayMainInfoRDB(Opts opts, Data src, Res res){
   char *tradang=NULL;
   char *fmt=NULL;
   char tbuf[SZ_LINE];
+  char s[SZ_LINE];
+  // do we need to tag the slice?
+  s[0] = '\0';
+  if( opts->docube ){
+    snprintf(s, SZ_LINE, " #%d", src->curslice+1);
+  }
   switch( opts->dosum ){
   case 1:
-    fprintf(opts->fd, "\n");
-    fprintf(opts->fd, "# summed background-subtracted results\n");
+    if( !opts->docube ){
+      fprintf(opts->fd, "\n");
+    }
+    fprintf(opts->fd, "# summed background-subtracted results%s\n", s);
     fprintf(opts->fd, "upto%c  net_counts%c    error", opts->c, opts->c);
     break;
   case 2:
@@ -73,8 +85,10 @@ static void regcntsDisplayMainInfoRDB(Opts opts, Data src, Res res){
     if( opts->c == '\t' ){
       fprintf(opts->fd, "\f");
     }
-    fprintf(opts->fd, "\n");
-    fprintf(opts->fd, "# background-subtracted results\n");
+    if( !opts->docube ){
+      fprintf(opts->fd, "\n");
+    }
+    fprintf(opts->fd, "# background-subtracted results%s\n", s);
     fprintf(opts->fd, " reg%c  net_counts%c    error", opts->c, opts->c);
     break;
   }
@@ -320,6 +334,7 @@ static void regcntsDisplayBkgInfoRDB(Opts opts, Data bkg, Res res){
     }
     fprintf(opts->fd, fmt, "all ", opts->c, res->bkgval, opts->c, res->bkgarea);
     fprintf(opts->fd, "\n");
+    fprintf(opts->fd, "\n");
     break;
   case BKG_EACH:
     if( opts->dosum ){
@@ -386,9 +401,9 @@ static void regcntsDisplayBkgInfoRDB(Opts opts, Data bkg, Res res){
 	fprintf(opts->fd, "\n");
       }
     }
+    fprintf(opts->fd, "\n");
     break;
   }
-  fprintf(opts->fd, "\n");
   fflush(opts->fd);
 }
 
@@ -427,6 +442,9 @@ static void regcntsDisplayHeaderJSON(Opts opts, Data src, Data bkg, Res res){
   }
   if( src->dpp > 0.0 ){
     fprintf(opts->fd, "    \"arcsecPerPixel\": %g,\n", src->dpp*ASEC_DEG);
+  }
+  if( opts->docube ){
+    fprintf(opts->fd, "    \"cubeSlices\": %d,\n", src->maxslice);
   }
   fprintf(opts->fd, "    \"dataFile\": \"%s\"\n", src->name);
   fprintf(opts->fd, "  },\n");
@@ -472,16 +490,22 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
   char *fmt=NULL;
   char tbuf[SZ_LINE];
   char *header[SZ_LINE];
+  char s[SZ_LINE];
+  // do we need to tag the slice?
+  s[0] = '\0';
+  if( opts->docube ){
+    snprintf(s, SZ_LINE, "%d", src->curslice+1);
+  }
   switch( opts->dosum ){
   case 1:
-    fprintf(opts->fd, "  \"summedBackgroundSubtractedResults\": [\n");
+    fprintf(opts->fd, "  \"summedBackgroundSubtractedResults%s\": [\n", s);
     header[0] = "upto";
     header[1] = "netCounts";
     header[2] = "error";
     break;
   case 2:
   default:
-    fprintf(opts->fd, "  \"backgroundSubtractedResults\": [\n");
+    fprintf(opts->fd, "  \"backgroundSubtractedResults%s\": [\n", s);
     header[0] = "reg";
     header[1] = "netCounts";
     header[2] = "error";
@@ -646,16 +670,22 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
   char *fmt=NULL;
   char *filtstr=NULL;
   char *header[SZ_LINE];
+  char s[SZ_LINE];
+  // do we need to tag the slice?
+  s[0] = '\0';
+  if( opts->docube ){
+    snprintf(s, SZ_LINE, "%d", src->curslice+1);
+  }
   /* make filter string json-compatible */
   if( src->filtstr ) filtstr = escjason(src->filtstr);
   /* display raw source counts */
   if( opts->dosum ){
     /* display source info */
     if( filtstr ){
-      fprintf(opts->fd, "  \"sourceRegions\": ");
+      fprintf(opts->fd, "  \"sourceRegions%s\": ", s);
       fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
-    fprintf(opts->fd, "  \"summedSourceData\": [\n");
+    fprintf(opts->fd, "  \"summedSourceData%s\": [\n", s);
     header[0] = "reg";
     header[1] = "counts";
     header[2] = "pixels";
@@ -690,10 +720,10 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
   } else {
     /* display source info */
     if( filtstr ){
-      fprintf(opts->fd, "  \"sourceRegions\": ");
+      fprintf(opts->fd, "  \"sourceRegions%s\": ", s);
       fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
-    fprintf(opts->fd, "  \"sourceData\": [\n");
+    fprintf(opts->fd, "  \"sourceData%s\": [\n", s);
     header[0] = "reg";
     header[1] = "counts";
     header[2] = "pixels";
@@ -731,6 +761,12 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
   char *fmt=NULL;
   char *filtstr=NULL;
   char *header[SZ_LINE];
+  char s[SZ_LINE];
+  // do we need to tag the slice?
+  s[0] = '\0';
+  if( opts->docube ){
+    snprintf(s, SZ_LINE, "%d", bkg->curslice+1);
+  }
   /* make filter string json-compatible */
   if( bkg->filtstr ) filtstr = escjason(bkg->filtstr);
   /* display raw background info */
@@ -739,10 +775,10 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
     break;
   case BKG_ALL:
     if( filtstr ){
-      fprintf(opts->fd, "  \"backgroundRegions\": ");
+      fprintf(opts->fd, "  \"backgroundRegions%s\": ", s);
       fprintf(opts->fd, " \"%s\",\n", filtstr);
     }
-    fprintf(opts->fd, "  \"backgroundData\": [\n");
+    fprintf(opts->fd, "  \"backgroundData%s\": [\n", s);
     header[0] = "reg";
     header[1] = "counts";
     header[2] = "pixels";
@@ -770,10 +806,10 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
       int tarea=0;
       double tcnts=0;
       if( filtstr ){
-	fprintf(opts->fd, "  \"backgroundRegions\": ");
+	fprintf(opts->fd, "  \"backgroundRegions%s\": ", s);
 	fprintf(opts->fd, " \"%s\",\n", filtstr);
       }
-      fprintf(opts->fd, "  \"summedBackgroundData\": [\n");
+      fprintf(opts->fd, "  \"summedBackgroundData%s\": [\n", s);
       header[0] = "reg";
       header[1] = "counts";
       header[2] = "pixels";
@@ -807,10 +843,10 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
       }
     } else {
       if( filtstr ){
-	fprintf(opts->fd, "  \"backgroundRegions\": ");
+	fprintf(opts->fd, "  \"backgroundRegions%s\": ", s);
 	fprintf(opts->fd, " \"%s\",\n", filtstr);
       }
-      fprintf(opts->fd, "  \"backgroundData\": [\n");
+      fprintf(opts->fd, "  \"backgroundData%s\": [\n", s);
       header[0] = "reg";
       header[1] = "counts";
       header[2] = "pixels";
