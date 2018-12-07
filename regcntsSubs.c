@@ -217,16 +217,19 @@ void regcntsGetData(Opts opts, Data d){
   case IMAGE_HDU:
     // we can pny handle 2D images
     fits_get_img_dim(d->fptr, &naxis, &status);
-    if( naxis != 2 ){
-      if( naxis == 3 ){
-	if( !opts->cube ){
-	  xerror(stderr, "use -c to specify a slice or cube:\n  -c 1428       # process slice 1428 in third axis\n  -c all        # process entire cube along third axis\n  -c '*:1428:*' # process slice 1428 in second axis\n");
-	  return;
-	}
-      } else {
-	xerror(stderr, "2D or 3D images only (this image has %d)\n", naxis);
-	return;
+    switch(naxis){
+    case 2:
+      break;
+    case 3:
+      if( !opts->cube ){
+	opts->cube = "all";
+	opts->dodata = 1;
+	opts->docube = 1;
       }
+      break;
+    default:
+      xerror(stderr, "2D or 3D images only (this image has %d)\n", naxis);
+      break;
     }
     // get cards as a string
     getHeaderToString(d->fptr, &d->cards, &ncard, &status);
