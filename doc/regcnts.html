@@ -402,22 +402,25 @@ or:
 Some day available memory will be infinite ... but not today.
 
 <p>
-Finally, note that <b>regcnts</b> works on 2D images and tables by default. You
-can process a 3D FITS cube by specifying the <b>-c [str]</b> (cube) switch,
-whose argument can take any of the following forms:
+The above discussion describes how <b>regcnts</b> works on 2D images
+and tables. You can process a 3D FITS cube by specifying the <b>-c [str]</b>
+(cube) switch, whose argument can take any of the following forms:
 <ul>
 <li><b>[n]</b>: process slice [n] in the 3rd dimension of the data cube
 <li><b>all</b>: process all slices in the 3rd dimension of the data cube
 <li><b>'*:*:[n]', '*:[n]:*', or '[n]:*:*'</b>: process slice [n] in the specified dimension of the data cube
 <li><b>'*:*:all', '*:all:*', or 'all:*:*'</b>: process all slices in the specified dimension of the data cube
 </ul>
-Thus, the following sets of commands are equivalent:
+In the absence of a <b>-c</b> switch, the default behavior for 3D
+images is to process all images in the third dimension. Thus, the
+following sets of commands are equivalent:
 <pre>
   # process slice 1428 in dimension 3 of the data cube
   regcnts -c 1428 cube.fits "circle(502,512,10)"
   regcnts -c '*:*:1428' cube.fits "circle(502,512,10)"
 
   # process all slices in dimension 3 of the data cube
+  regcnts cube.fits "circle(502,512,10)"
   regcnts -c all cube.fits "circle(502,512,10)"
   regcnts -c '*:*:all' cube.fits "circle(502,512,10)"
 </pre>
