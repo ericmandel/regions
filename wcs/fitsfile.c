@@ -1,8 +1,8 @@
 /*** File libwcs/fitsfile.c
- *** July 25, 2014
+ *** June 24, 2016
  *** By Jessica Mink, jmink@cfa.harvard.edu
  *** Harvard-Smithsonian Center for Astrophysics
- *** Copyright (C) 1996-2014
+ *** Copyright (C) 1996-2016
  *** Smithsonian Astrophysical Observatory, Cambridge, MA, USA
 
     This library is free software; you can redistribute it and/or
@@ -174,7 +174,7 @@ int	*nbhead;	/* Number of bytes before start of data (returned) */
 #endif
 
     if (ext != NULL) {
-	if (isnum (ext+1))
+	if (isnum (ext+1) == 1)
 	    extnum = atoi (ext+1);
 	else {
 	    extnum = -2;
@@ -290,7 +290,7 @@ int	*nbhead;	/* Number of bytes before start of data (returned) */
 	*(headnext+nbr+1) = 0;
 	ibhead = ibhead + 2880;
 	if (verbose)
-	    fprintf (stderr,"FITSRHEAD: %d bytes in header\n",(int)ibhead);
+	    fprintf (stderr,"FITSRHEAD: %d bytes in header\n", (int)ibhead);
 
 	/* Check to see if this is the final record in this header */
 	headend = ksearch (fitsbuf,"END");
@@ -328,7 +328,7 @@ int	*nbhead;	/* Number of bytes before start of data (returned) */
 		nbprim = nrec * FITSBLOCK;
 		headend = ksearch (header,"END");
 		lprim = headend + 80 - header;
-		pheader = (char *) calloc ((unsigned int) nbprim, 1);
+		pheader = (char *) calloc ((unsigned int) (nbprim + 1), 1);
 		for (i = 0; i < lprim; i++)
 		    pheader[i] = header[i];
 		for (i = lprim; i < nbprim; i++)
@@ -2322,4 +2322,7 @@ char *from, *last, *to;
  * Sep 15 2011	Declare global variable ibhead off_t
  *
  * Jul 25 2014	Fix bug when reallocating buffer for long headers
+ *
+ * Jun  9 2016	Fix isnum() tests for added coloned times and dashed dates
+ * Jun 24 2016	Add 1 to allocation of pheader for trailing null, fix by Ole Streicher
  */

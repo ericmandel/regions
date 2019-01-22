@@ -1,8 +1,8 @@
 /*** File libwcs/wcsinit.c
- *** July 24, 2013
+ *** July 24, 2016
  *** By Jessica Mink, jmink@cfa.harvard.edu
  *** Harvard-Smithsonian Center for Astrophysics
- *** Copyright (C) 1998-2013
+ *** Copyright (C) 1998-2016
  *** Smithsonian Astrophysical Observatory, Cambridge, MA, USA
 
     This library is free software; you can redistribute it and/or
@@ -52,7 +52,6 @@ static void wcseqm();
 static void wcsioset();
 void wcsrotset();
 char wcschar();
-char *uppercase();
 
 /* set up a WCS structure from a FITS image header lhstring bytes long 
  * for a specified WCS name */
@@ -585,7 +584,7 @@ char *wchar;		/* Suffix character for one of multiple WCS */
 	if (wcs->wcsproj != WCS_OLD &&
 	    (hcoeff = ksearch (hstring,"CO1_1")) != NULL) {
 	    wcs->prjcode = WCS_PLT;
-	    (void)strcpy (wcs->ptype, "PLATE");
+	    (void)strcpy (wcs->ptype, "PLA");
 	    for (i = 0; i < 20; i++) {
 		sprintf (keyword,"CO1_%d", i+1);
 		wcs->x_coeff[i] = 0.0;
@@ -804,8 +803,8 @@ char *wchar;		/* Suffix character for one of multiple WCS */
 	    }
 
 	/* If linear or pixel WCS, print "degrees" */
-	if (!strncmp (wcs->ptype,"LINEAR",6) ||
-	    !strncmp (wcs->ptype,"PIXEL",5)) {
+	if (!strncmp (wcs->ptype,"LIN",3) ||
+	    !strncmp (wcs->ptype,"PIX",3)) {
 	    wcs->degout = -1;
 	    wcs->ndec = 5;
 	    }
@@ -1613,4 +1612,6 @@ char	*mchar;		/* Suffix character for one of multiple WCS */
  * Feb  1 2013	Externalize uppercase()
  * Feb 07 2013	Avoid SWARP distortion if SIRTF distortion is present
  * Jul 25 2013	Initialize n=0 when checking for SCAMP distortion terms (fix from Martin Kuemmel)
+ *
+ * Jun 24 2016	wcs->ptype contains only 3-letter projection code
  */
