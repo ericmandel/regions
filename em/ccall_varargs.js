@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
 
-/*global ccall_varargs, getCFunc HEAPF64, HEAP32, assert, toC, EmterpreterAsync, Pointer_stringify, stackSave, stackAlloc, stackRestore, Module */
+/*global ccall_varargs, getCFunc HEAPF64, HEAP32, assert, toC, EmterpreterAsync, UTF8ToString, stackSave, stackAlloc, stackRestore, Module */
 
 // C calling interface for varargs.
 // Like ccall, but with a varargs array in the last argTypes argument
@@ -128,7 +128,7 @@ Module["ccall_varargs"] = function(ident, returnType, argTypes, args, opts) {
 	assert(!returnType, 'async ccalls cannot return values');
     }
     if (returnType === 'string') {
-	ret = Pointer_stringify(ret);
+	ret = UTF8ToString(ret);
     }
     if (stack !== 0) {
 	if (opts && opts.async) {

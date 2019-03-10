@@ -159,8 +159,8 @@ RegionsMask FilterRegions_EM(Regions reg,
          window.Regions = {};
       }
       window.Regions.NSHAPE = function(){return $0};
-      window.Regions.FINIT =  new Function('g', 'x', 'y', Pointer_stringify($1));
-      window.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + Pointer_stringify($2) + ')');
+      window.Regions.FINIT =  new Function('g', 'x', 'y', UTF8ToString($1));
+      window.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + UTF8ToString($2) + ')');
   }, reg->nshape, ibuf, reg->filter);
   if( ibuf ) free(ibuf);
   // call the real filter routine
