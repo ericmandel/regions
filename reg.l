@@ -13,7 +13,9 @@ option caseless
 #define YY_NO_INPUT
 
 /* must match imregions.h */
-#define PSTOP	-142857.285714
+/* 2**53 can be represented exactly in IEEE */
+#define PSTOP		9007199254740992.0
+
 
 #define MAX_INCLUDE_DEPTH 100
 #define SEGINC 1024

@@ -2181,7 +2181,9 @@ char *regionstext_ptr;
 #define YY_NO_INPUT
 
 /* must match imregions.h */
-#define PSTOP	-142857.285714
+/* 2**53 can be represented exactly in IEEE */
+#define PSTOP		9007199254740992.0
+
 
 #define MAX_INCLUDE_DEPTH 100
 #define SEGINC 1024
@@ -2366,7 +2368,7 @@ int regparse(Regions reg);
 
 
 
-#line 2370 "lex.regions.c"
+#line 2372 "lex.regions.c"
 
 #define INITIAL 0
 #define RTINE 1
@@ -2552,10 +2554,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 239 "reg.l"
+#line 241 "reg.l"
 
 
-#line 2559 "lex.regions.c"
+#line 2561 "lex.regions.c"
 
 	if ( !(yy_init) )
 		{
@@ -2673,7 +2675,7 @@ do_action:	/* This label is used only to access EOF actions. */
 	{ /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 241 "reg.l"
+#line 243 "reg.l"
 { 
   _regCat(regionstext);
 }
@@ -2681,29 +2683,29 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 245 "reg.l"
+#line 247 "reg.l"
 {
   _regSetWCS(regionstext);
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 249 "reg.l"
+#line 251 "reg.l"
 { BEGIN COMM; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 250 "reg.l"
+#line 252 "reg.l"
 { BEGIN COMM; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 251 "reg.l"
+#line 253 "reg.l"
 { BEGIN COMM; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 253 "reg.l"
+#line 255 "reg.l"
 { 
   /* comment acts like EOL */
   if( YY_START == REG ){
@@ -2718,22 +2720,22 @@ YY_RULE_SETUP
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 263 "reg.l"
+#line 265 "reg.l"
 { BEGIN INITIAL; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 264 "reg.l"
+#line 266 "reg.l"
 { BEGIN INITIAL; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 265 "reg.l"
+#line 267 "reg.l"
 { /* ignore comments up to eol */ ; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 267 "reg.l"
+#line 269 "reg.l"
 {
   /* json object finished a region */
   if( YY_START == REG ){
@@ -2748,14 +2750,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 278 "reg.l"
+#line 280 "reg.l"
 {
   brlev++;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 281 "reg.l"
+#line 283 "reg.l"
 {
   if( --brlev == 0 ){
     BEGIN INITIAL;
@@ -2764,38 +2766,38 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 286 "reg.l"
+#line 288 "reg.l"
 { /* ignore json */ ;}
 	YY_BREAK
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 288 "reg.l"
+#line 290 "reg.l"
 { ; /* ignore */ }
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 289 "reg.l"
+#line 291 "reg.l"
 { ; /* ignore */ }
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 290 "reg.l"
+#line 292 "reg.l"
 { ; /* ignore */ }
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
 YY_RULE_SETUP
-#line 291 "reg.l"
+#line 293 "reg.l"
 { ; /* ignore */ }
 	YY_BREAK
 case 18:
-#line 294 "reg.l"
+#line 296 "reg.l"
 case 19:
 YY_RULE_SETUP
-#line 294 "reg.l"
+#line 296 "reg.l"
 {
   /* finish off previous */
   if( YY_START == REG ){
@@ -2810,7 +2812,7 @@ YY_RULE_SETUP
 case 20:
 /* rule 20 can match eol */
 YY_RULE_SETUP
-#line 304 "reg.l"
+#line 306 "reg.l"
 {
   /* can't happen */
   _regerror("invalid characters following the region name");
@@ -2818,7 +2820,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 308 "reg.l"
+#line 310 "reg.l"
 {
   narg++;
   /* process this pure number in the current coord system */
@@ -2827,7 +2829,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 313 "reg.l"
+#line 315 "reg.l"
 {
   narg++;
   /* remove trailing unit character */
@@ -2838,7 +2840,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 320 "reg.l"
+#line 322 "reg.l"
 {
   narg++;
   /* remove trailing unit character */
@@ -2849,7 +2851,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 327 "reg.l"
+#line 329 "reg.l"
 {
   char *csys;
   if( nowcs(wcs) ){
@@ -2879,7 +2881,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 353 "reg.l"
+#line 355 "reg.l"
 {
   narg++;
   /* handle position arguments */
@@ -2942,7 +2944,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 412 "reg.l"
+#line 414 "reg.l"
 {
   narg++;
   /* handle position arguments */
@@ -3005,7 +3007,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 471 "reg.l"
+#line 473 "reg.l"
 {
   if( !WCSSIZE ){
     _regerror("no WCS (or CDELT) information in file");
@@ -3024,7 +3026,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 486 "reg.l"
+#line 488 "reg.l"
 {
   if( !WCSSIZE ){
     _regerror("no WCS (or CDELT) information in file");
@@ -3043,7 +3045,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 501 "reg.l"
+#line 503 "reg.l"
 {
   int n;
   n = strtol(strchr(regionstext, '=')+1, NULL, 10);
@@ -3058,7 +3060,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 512 "reg.l"
+#line 514 "reg.l"
 {
   if( _regArgCheck(regname, narg) == 0 ){
     /* new expression without an expression separator ... sigh */
@@ -3076,7 +3078,7 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 525 "reg.l"
+#line 527 "reg.l"
 {
   /* new expression without an expression separator ... sigh */
   _regEnd();
@@ -3087,7 +3089,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 532 "reg.l"
+#line 534 "reg.l"
 {
   /* explicit rule avoids the _regNew of general rule */
   ;
@@ -3095,7 +3097,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 536 "reg.l"
+#line 538 "reg.l"
 {
   _regRegionVal(regionstext);
   if( !nsparen ){
@@ -3106,14 +3108,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 543 "reg.l"
+#line 545 "reg.l"
 { 
   nsparen++;
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 546 "reg.l"
+#line 548 "reg.l"
 {
 	_regRegionVal(regionstext+1);
 	if( nsparen ){
@@ -3136,7 +3138,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 565 "reg.l"
+#line 567 "reg.l"
 {
   if( nsparen ){
     nsparen--;
@@ -3157,7 +3159,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 582 "reg.l"
+#line 584 "reg.l"
 { 
   _regEnd();
   _regOp(regionstext);
@@ -3167,7 +3169,7 @@ YY_RULE_SETUP
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 587 "reg.l"
+#line 589 "reg.l"
 { 
   _regEnd();
   _regNew();
@@ -3180,7 +3182,7 @@ case 39:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up regionstext again */
 YY_RULE_SETUP
-#line 593 "reg.l"
+#line 595 "reg.l"
 { 
   /* Found a routine */
   laststart = YY_START;
@@ -3194,7 +3196,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 603 "reg.l"
+#line 605 "reg.l"
 {
   /* explicit rule avoids the _regNew of general rule */
   _regCat(",");
@@ -3202,7 +3204,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 607 "reg.l"
+#line 609 "reg.l"
 {
   nrparen++;
   _regCat("(");
@@ -3210,7 +3212,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 611 "reg.l"
+#line 613 "reg.l"
 {
   nrparen--;
   if( nrparen ){
@@ -3224,7 +3226,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 622 "reg.l"
+#line 624 "reg.l"
 {
   /* Found an include file */
   char *s=NULL;
@@ -3254,18 +3256,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 649 "reg.l"
+#line 651 "reg.l"
 { ; /* ignore white space */ }
 	YY_BREAK
 case 45:
 /* rule 45 can match eol */
 YY_RULE_SETUP
-#line 651 "reg.l"
+#line 653 "reg.l"
 { narg++; _regCat(regionstext); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 653 "reg.l"
+#line 655 "reg.l"
 {
   char tbuf[SZ_LINE];
   bin2num(tbuf, regionstext, SZ_LINE-1);
@@ -3275,7 +3277,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 660 "reg.l"
+#line 662 "reg.l"
 {
   _regOp(regionstext);
   if( YY_START != RTINE ){ BEGIN INITIAL; }
@@ -3283,7 +3285,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 665 "reg.l"
+#line 667 "reg.l"
 {
   nparen++;
   _regNew();
@@ -3293,7 +3295,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 671 "reg.l"
+#line 673 "reg.l"
 {
   nparen--;
   _regNew();
@@ -3304,7 +3306,7 @@ YY_RULE_SETUP
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 677 "reg.l"
+#line 679 "reg.l"
 {       
   _regNew();
   BEGIN INITIAL;
@@ -3312,7 +3314,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 682 "reg.l"
+#line 684 "reg.l"
 { 
   _regCat(regionstext);
 }
@@ -3322,7 +3324,7 @@ case YY_STATE_EOF(RTINE):
 case YY_STATE_EOF(REG):
 case YY_STATE_EOF(COMM):
 case YY_STATE_EOF(JSON):
-#line 686 "reg.l"
+#line 688 "reg.l"
 {
   if( --include_stack_ptr < 0 ){
     regions_delete_buffer(YY_CURRENT_BUFFER );
@@ -3337,10 +3339,10 @@ case YY_STATE_EOF(JSON):
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 698 "reg.l"
+#line 700 "reg.l"
 ECHO;
 	YY_BREAK
-#line 3344 "lex.regions.c"
+#line 3346 "lex.regions.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -4309,7 +4311,7 @@ void regionsfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 698 "reg.l"
+#line 700 "reg.l"
 
 
 
