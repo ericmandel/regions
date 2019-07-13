@@ -335,7 +335,7 @@ char    *filename;      /* Name of file to check */
 	    return (2);
 	else
 	    return (1);
-    }
+	}
 }
 
 

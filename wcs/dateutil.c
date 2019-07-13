@@ -1,8 +1,8 @@
 /*** File libwcs/dateutil.c
- *** May 2, 2017
+ *** October 19, 2012
  *** By Jessica Mink, jmink@cfa.harvard.edu
  *** Harvard-Smithsonian Center for Astrophysics
- *** Copyright (C) 1999-2017
+ *** Copyright (C) 1999-2012
  *** Smithsonian Astrophysical Observatory, Cambridge, MA, USA
 
     This library is free software; you can redistribute it and/or
@@ -2333,7 +2333,7 @@ double dj;	/* Julian Date (UT) */
 }
 
 
-/* FD2OFD-- convert any FITS standard datetime string to old FITS standard date */
+/* FD2OFD-- convert any FITS standard date to old FITS standard date */
 
 char *
 fd2ofd (string)
@@ -2347,21 +2347,20 @@ char *string;	/* FITS date string, which may be:
 {
     int iyr,imon,iday,ihr,imn;
     double sec;
-    char *dstr;
 
     fd2i (string,&iyr,&imon,&iday,&ihr,&imn,&sec, 3);
 
     /* Convert to old FITS date format */
-    dstr = (char *) calloc (32, sizeof (char));
+    string = (char *) calloc (32, sizeof (char));
     if (iyr < 1900)
-	sprintf (dstr, "*** date out of range ***");
+	sprintf (string, "*** date out of range ***");
     else if (iyr < 2000)
-	sprintf (dstr, "%02d/%02d/%02d", iday, imon, iyr-1900);
+	sprintf (string, "%02d/%02d/%02d", iday, imon, iyr-1900);
     else if (iyr < 2900.0)
-	sprintf (dstr, "%02d/%02d/%3d", iday, imon, iyr-1900);
+	sprintf (string, "%02d/%02d/%3d", iday, imon, iyr-1900);
     else
-	sprintf (dstr, "*** date out of range ***");
-    return (dstr);
+	sprintf (string, "*** date out of range ***");
+    return (string);
 }
 
 
@@ -2379,14 +2378,13 @@ char *string;	/* FITS date string, which may be:
 {
     int iyr,imon,iday,ihr,imn;
     double sec;
-    char *tstr;
 
     fd2i (string,&iyr,&imon,&iday,&ihr,&imn,&sec, 3);
 
     /* Convert to old FITS date format */
-    tstr = (char *) calloc (32, sizeof (char));
-    sprintf (tstr, "%02d:%02d:%06.3f", ihr, imn, sec);
-    return (tstr);
+    string = (char *) calloc (32, sizeof (char));
+    sprintf (string, "%02d:%02d:%06.3f", ihr, imn, sec);
+    return (string);
 }
 
 
@@ -4553,6 +4551,4 @@ double	dnum, dm;
  *
  * Jan 11 2012	Add TAI, TT, GPS time
  * Oct 19 2012	Unused l0 dropped from jd2lst(); ts2ss from jd2mst()
- *
- * May  2 2017	Allocate new output string for fd2ofd() and fd2oft()
  */

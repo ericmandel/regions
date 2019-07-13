@@ -568,6 +568,7 @@ double pixcrd[];
    int    err, j;
    double offset;
 
+
    /* Initialize if required. */
    if (wcs->flag != WCSSET) {
       if (wcsset(lin->naxis, ctype, wcs)) return 1;
@@ -1331,6 +1332,4 @@ double pixcrd[];
  * Apr  3 2002	Mark Calabretta - Fix bug in code checking section
  *
  * Jun 20 2006	Doug Mink - Initialized uninitialized variables
- *
- * Jun 22 2016	Jessica Mink - Increase CTYPE length to 16
  */

@@ -109,7 +109,7 @@ extern void             poly_addcste(polystruct *poly, double *cste),
 #endif
 
 extern int npcode;
-extern char pcodes[26][4];
+extern char pcodes[29][4];
 
 struct prjprm {
    char   code[4];
@@ -219,6 +219,15 @@ struct prjprm {
    int qscset(struct prjprm *);
    int qscfwd(const double, const double, struct prjprm *, double *, double *);
    int qscrev(const double, const double, struct prjprm *, double *, double *);
+   int hpxset(struct prjprm *);
+   int hpxfwd(const double, const double, struct prjprm *, double *, double *);
+   int hpxrev(const double, const double, struct prjprm *, double *, double *);
+   int xphset(struct prjprm *);
+   int xphfwd(const double, const double, struct prjprm *, double *, double *);
+   int xphrev(const double, const double, struct prjprm *, double *, double *);
+   int toaset(struct prjprm *);
+   int toafwd(const double, const double, struct prjprm *, double *, double *);
+   int toarev(const double, const double, struct prjprm *, double *, double *);
    int raw_to_pv(struct prjprm *prj, double x, double y, double *xo, double *yo);
 #else
    int prjset(), prjfwd(), prjrev();
@@ -473,6 +482,4 @@ extern const char *wcsmix_errmsg[];
  * Jan  4 2007	Doug Mink - Drop extra declarations of SZP subroutines
  *
  * Mar 30 2011	Doug Mink - Add raw_to_pv() subroutine for SCAMP from Ed Los
- *
- * Jun 22 2016	Jessica Mink - Increase length of ctype to 16 to handle distortion
-*/
+ */
