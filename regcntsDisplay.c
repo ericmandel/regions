@@ -431,6 +431,39 @@ static char *escjason(char *s){
   return t;
 }
 
+/* output a line of json, first removing NaN */
+static void nonanjson(FILE *fd, char *s){
+  int done = 0;
+  char *nxt, *nptr;
+  char *cur = s;
+  while( !done ){
+    if( (nptr = strstr(cur, "-nan")) || (nptr = strstr(cur, "-NaN")) ){
+      nxt = nptr + 4;
+    } else if( (nptr = strstr(cur, "nan")) || (nptr = strstr(cur, "NaN")) ){
+      nxt = nptr + 3;
+    } else {
+      nxt = NULL;
+    }
+    // if we found a NaN
+    if( nptr ){
+      // replace with a NULL
+      *nptr = '\0';
+    }
+    // output line up to NaN
+    fprintf(fd, "%s", cur);
+    if( nptr ){
+      // output NaN replacement
+      fprintf(fd, "\"NaN\"");
+    }
+    // skip past NaN or finish
+    if( nxt ){
+      cur = nxt;
+    } else {
+      done = 1;
+    }
+  }
+}
+
 /* display results header */
 static void regcntsDisplayHeaderJSON(Opts opts, Data src, Data bkg, Res res){
   char *s;
@@ -489,6 +522,7 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
   char *tradang=NULL;
   char *fmt=NULL;
   char tbuf[SZ_LINE];
+  char lbuf[SZ_LINE];
   char *header[SZ_LINE];
   char s[SZ_LINE];
   // do we need to tag the slice?
@@ -559,7 +593,7 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
 	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g, \"%s\": %.14g";
 	break;
       }
-      fprintf(opts->fd, fmt,
+      snprintf(lbuf, SZ_LINE, fmt,
 	      header[0], i+1,
 	      header[1], res->bscnts[i],
 	      header[2], res->bserr[i],
@@ -568,6 +602,7 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
 	      header[5], areasq,
 	      header[6], cntsperarea,
 	      header[7], errperarea);
+      nonanjson(opts->fd, lbuf);
       /* display values from this line of radii/angles */
       if( opts->doradang && cradang ){
 	int ip=0;
@@ -577,13 +612,14 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
 	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
 	    dval = strtod(tbuf, NULL);
 	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
-	      fprintf(opts->fd, " \"%s\": %.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
+	      snprintf(lbuf, SZ_LINE, " \"%s\": %.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
 	    } else {
-	      fprintf(opts->fd, " \"%s\": %.3f", header[8+j], dval);
+	      snprintf(lbuf, SZ_LINE, " \"%s\": %.3f", header[8+j], dval);
 	    }
 	  } else {
-	    fprintf(opts->fd, " \"%s\": %.9s", header[8+j], "\"NA\"");
+	    snprintf(lbuf, SZ_LINE, " \"%s\": %.9s", header[8+j], "\"NA\"");
 	  }
+	  nonanjson(opts->fd, lbuf);
 	  if( j != 3 ){
 	    fprintf(opts->fd, ",");
 	  }
@@ -628,13 +664,14 @@ static void regcntsDisplayMainInfoJSON(Opts opts, Data src, Res res){
 	  if( word(cradang, tbuf, &ip) && strcmp(tbuf, "NA") ){
 	    dval = strtod(tbuf, NULL);
 	    if( (j<2) && !opts->dopixels && (src->dpp>0.0) ){
-	      fprintf(opts->fd, " \"%s\": %9.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
+	      snprintf(lbuf, SZ_LINE, " \"%s\": %9.3f", header[8+j], (dval*src->dpp*ASEC_DEG));
 	    } else {
-	      fprintf(opts->fd, " \"%s\": %9.3f", header[8+j], dval);
+	      snprintf(lbuf, SZ_LINE, " \"%s\": %9.3f", header[8+j], dval);
 	    }
 	  } else {
-	    fprintf(opts->fd, " \"%s\": %9.9s", header[8+j], "\"NA\"");
+	    snprintf(lbuf, SZ_LINE, " \"%s\": %9.9s", header[8+j], "\"NA\"");
 	  }
+	  nonanjson(opts->fd, lbuf);
 	  if( j != 3 ){
 	    fprintf(opts->fd, ",");
 	  }
@@ -671,6 +708,7 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
   char *filtstr=NULL;
   char *header[SZ_LINE];
   char s[SZ_LINE];
+  char lbuf[SZ_LINE];
   // do we need to tag the slice?
   s[0] = '\0';
   if( opts->docube ){
@@ -706,12 +744,13 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
 	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
 	break;
       }
-      fprintf(opts->fd, fmt,
+      snprintf(lbuf, SZ_LINE, fmt,
 	      header[0], i+1,
 	      header[1], src->cnts[i],
 	      header[2], src->area[i],
 	      header[3], tcnts,
 	      header[4], tarea);
+      nonanjson(opts->fd, lbuf);
       if( i != (src->nreg-1) ){
 	fprintf(opts->fd, ",");
       }
@@ -740,10 +779,11 @@ static void regcntsDisplaySrcInfoJSON(Opts opts, Data src){
 	fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
 	break;
       }
-      fprintf(opts->fd, fmt,
+      snprintf(lbuf, SZ_LINE, fmt,
 	      header[0], i+1,
 	      header[1], src->cnts[i],
 	      header[2], src->area[i]);
+      nonanjson(opts->fd, lbuf);
       if( i != (src->nreg-1) ){
 	fprintf(opts->fd, ",");
       }
@@ -762,6 +802,7 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
   char *filtstr=NULL;
   char *header[SZ_LINE];
   char s[SZ_LINE];
+  char lbuf[SZ_LINE];
   // do we need to tag the slice?
   s[0] = '\0';
   if( opts->docube ){
@@ -794,10 +835,11 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
       fmt = "    {\"%s\": %s, \"%s\": %.14g, \"%s\": %d}";
       break;
     }
-    fprintf(opts->fd, fmt,
+    snprintf(lbuf, SZ_LINE, fmt,
 	    header[0], "\"all\"",
 	    header[1], res->bkgval,
 	    header[2], res->bkgarea);
+    nonanjson(opts->fd, lbuf);
     fprintf(opts->fd, "\n");
     fprintf(opts->fd, "  ],\n");
     break;
@@ -830,12 +872,13 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
 	  fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
 	  break;
 	}
-	fprintf(opts->fd, fmt,
+	snprintf(lbuf, SZ_LINE, fmt,
 		header[0], i+1,
 		header[1], bkg->cnts[i],
 		header[2], bkg->area[i],
 		header[3], tcnts,
 		header[4], tarea);
+	nonanjson(opts->fd, lbuf);
 	if( i != (bkg->nreg-1) ){
 	  fprintf(opts->fd, ",");
 	}
@@ -863,10 +906,11 @@ static void regcntsDisplayBkgInfoJSON(Opts opts, Data bkg, Res res){
 	  fmt = "    {\"%s\": %d, \"%s\": %.14g, \"%s\": %d}";
 	  break;
 	}
-	fprintf(opts->fd, fmt,
+	snprintf(lbuf, SZ_LINE, fmt,
 		header[0], i+1,
 		header[1], bkg->cnts[i],
 		header[2], bkg->area[i]);
+	nonanjson(opts->fd, lbuf);
 	if( i != (bkg->nreg-1) ){
 	  fprintf(opts->fd, ",");
 	}

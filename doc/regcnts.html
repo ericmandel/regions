@@ -369,8 +369,13 @@ The net rate (surface brightness) would then be:
 If the <b>-t</b> (rdb table) switch is used, the output will conform
 to starbase/rdb data base format: tabs will be inserted between
 columns rather than spaces and line-feed will be inserted between
-tables. If the <b>-j</b> (json) switch is used, the output will be a
-JSON-formatted string instead of a table.
+tables.
+
+<p>
+If the <b>-j</b> (json) switch is used, the output will be a
+JSON-formatted string instead of a table. Since JSON does not
+recognize NaN as a valid number, all NaN values will be converted to
+"NaN" string values.
 
 <p>
 It is important to note that <b>regcnts</b> is an image program, even
