@@ -1993,7 +1993,7 @@ static void _regInitWCS() {
   /* free up old wcs */
   wcsfree(wcs);
   /* init new wcs, if possible */
-  hlength(xreg->cards, 0);
+  hlength(xreg->cards, 256000);
   wcs = wcsinit(xreg->cards);
   /* set some extra wcs parameters */
   if( wcs && iswcs(wcs) ){
