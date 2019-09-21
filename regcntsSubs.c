@@ -278,7 +278,7 @@ void regcntsGetData(Opts opts, Data d){
     break;
   }
   /* get wcs, if possible */
-  hlength(d->cards, 0);
+  hlength(d->cards, 256000);
   d->wcs = wcsinit(d->cards);
   /* use entire image for the section */
   if( opts->dodata ){
