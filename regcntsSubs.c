@@ -101,7 +101,7 @@ void regcntsParseArgs(int argc, char **argv,
   while ((c = getopt(argc, argv, "b:c:e:gGhjmo:prstz1")) != -1){
     switch(c){
     case 'b':
-      opts->bin = atoi(optarg);
+      opts->bin = atof(optarg);
       break;
     case 'c':
       opts->cube = optarg;

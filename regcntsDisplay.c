@@ -22,7 +22,7 @@ static void regcntsDisplayHeaderRDB(Opts opts, Data src, Data bkg, Res res){
     fprintf(opts->fd, "#   cube_slices:\t%d\n", src->maxslice);
   }
   if( opts->bin != 1 ){
-    fprintf(opts->fd, "#   auto_block:\t\t%d\n", opts->bin);
+    fprintf(opts->fd, "#   auto_block:\t\t%.2f\n", opts->bin);
   }
   if( src->dpp > 0.0 ){
     fprintf(opts->fd, "#   arcsec/pixel:\t%g\n", src->dpp*ASEC_DEG);
@@ -471,7 +471,7 @@ static void regcntsDisplayHeaderJSON(Opts opts, Data src, Data bkg, Res res){
   fprintf(opts->fd, "{\n");
   fprintf(opts->fd, "  \"source\": {\n");
   if( opts->bin != 1 ){
-    fprintf(opts->fd, "    \"autoBlock\": %d,\n", opts->bin);
+    fprintf(opts->fd, "    \"autoBlock\": %.2f,\n", opts->bin);
   }
   if( src->dpp > 0.0 ){
     fprintf(opts->fd, "    \"arcsecPerPixel\": %g,\n", src->dpp*ASEC_DEG);

@@ -49,7 +49,6 @@
 
 /* options record */
 typedef struct optsRec {
-  int bin;
   int bktype;
   int c;
   int dobkgderr;
@@ -63,6 +62,7 @@ typedef struct optsRec {
   int dozero;
   int otype;
   char *cube;
+  double bin;
   FILE *fd;
   FILE *efd;
 } *Opts, OptsRec;
