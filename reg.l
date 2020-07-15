@@ -288,6 +288,7 @@ compass { BEGIN COMM; }
 <JSON>. { /* ignore json */ ;}
 
 [+-]?text([ \t]+|{SP}\({SP})[^;\n]*{EOL}  	{ ; /* ignore */ }
+[+-]?cross([ \t]+|{SP}\({SP})[^;\n]*{EOL}  	{ ; /* ignore */ }
 [+-]?vector([ \t]+|{SP}\({SP})[^;\n]*{EOL}  	{ ; /* ignore */ }
 [+-]?ruler([ \t]+|{SP}\({SP})[^;\n]*{EOL} 	{ ; /* ignore */ }
 [+-]?projection([ \t]+|{SP}\({SP})[^;\n]*{EOL}	{ ; /* ignore */ }
