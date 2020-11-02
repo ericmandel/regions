@@ -55,6 +55,13 @@ case $name in
 		$*
   ;;
 
+  engle*)
+  ./configure 	$CF						\
+		--prefix=$HOME					\
+		CC=cc CFLAGS="$DEVFLAGS" 			\
+		$*
+  ;;
+
   luke*|han*)
   ./configure 	$CF						\
 		--prefix=/pool14/eric				\
