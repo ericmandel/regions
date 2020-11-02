@@ -282,16 +282,16 @@ install:	$(PROGS) $(LIBS) FORCE
 		  done;)
 
 clean:		FORCE
-		@($(RM) *{.a,.so,.so.?,.so.?.?,.o,.dylib} \
+		@($(RM) *.a *.so *.so.? *.so.?.? *.dylib *.o \
 		  $(PROGS) $(TPROGS) \
 		  *.exe core core.[0-9]* errs *pure* .nfs* \
 		  foo* *~ *.log \#* TAGS *.E a.out a.out.js errors \
-		  gmon.out *.pg *.bak regtest.{pr,dy,co} \
+		  gmon.out *.pg *.bak regtest.pr regtest.dy regtest.co \
 		  config.info config.log autom4te.cache *.dSYM; \
-		  $(RM) $(DOC)/*{~,.bak} \
-		  $(RM) $(WCS)/*{~,.o} \
-		  $(RM) $(UTIL)/*{~,.o}; \
-		  $(RM) $(TESTDIR)/*{~,.out,.log,.pr,.dy}; \
+		  $(RM) $(DOC)/*~ $(DOC)/*.bak; \
+		  $(RM) $(WCS)/*~ $(WCS)/*.o; \
+		  $(RM) $(UTIL)/*~ $(UTIL)/*.o; \
+		  $(RM) $(TESTDIR)/*~ $(TESTDIR)/*.out $(TESTDIR)/*.log $(TESTDIR)/*.pr $(TESTDIR)/*.dy; \
 		  cd em && make clean;)
 
 Makefile:	Makefile.in
