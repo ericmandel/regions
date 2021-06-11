@@ -38,7 +38,7 @@ case $name in
  		$*
   ;;
 
-  js9)
+  js9*)
   ./configure 	$CF					\
 		--prefix=/js9				\
 		--with-cfitsio=/js9			\
