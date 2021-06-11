@@ -40,8 +40,8 @@ case $name in
 
   js9)
   ./configure 	$CF					\
-		--prefix=$HOME				\
-		--with-cfitsio=$HOME			\
+		--prefix=/js9				\
+		--with-cfitsio=/js9			\
 		--with-filter-cflags="-O2"		\
 		CC=gcc CFLAGS="$CFLAGS $PRODFLAGS"	\
 		$*
@@ -68,15 +68,6 @@ case $name in
 		--with-cfitsio=/proj/rd/solaris			\
   		CC=gcc CFLAGS="$DEVFLAGS"			\
  		$*
-  ;;
-
-  smartx*)
-  ./configure   $CF                                                     \
-                --prefix=/smartx                                        \
-                --with-cfitsio=/smartx/cfitsio                          \
-		--with-filter-cflags="-O2"				\
-                CC=gcc CFLAGS="$CFLAGS $PRODFLAGS"                      \
-                $*
   ;;
 
   *)
