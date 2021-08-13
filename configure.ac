@@ -65,6 +65,9 @@ if test x"$havelib" = x0 ; then
   fi
 fi
 
+# cfitsio 4.0.0 no longer supplies zlib routines if they are installed
+AC_CHECK_LIB(z, inflate, EXTRA_LIBS="$EXTRA_LIBS -lz")
+
 AC_CHECK_LIB(dl, dlopen, have_dl=yes, have_dl=no)
 if test "$have_dl" = yes; then
   dofpic="yes"
