@@ -143,7 +143,7 @@ void imstat(void *buf, int idim1, int idim2, int bitpix, int n){
 
 int main(int argc, char *argv[])
 {
-  char *colname[2] = {"X", "Y"};
+  char *colname = "X Y";
   char *ifile = NULL;
   char *ifilter=NULL;
   char *tfilter=NULL;
@@ -156,11 +156,11 @@ int main(int argc, char *argv[])
   int domem = 0;
   int dohdr = 0;
   int status = 0;   /*  CFITSIO status value MUST be initialized to zero!  */
-  int bin = 1;
   int binMode = 0;
   int start[NDIM];
   int stop[NDIM];
   int dims[] = {IMDIM, IMDIM};
+  double bin = 1;
   void *buf;
   int idim1, idim2, idim3, bitpix;
   size_t ilen=0;
@@ -180,8 +180,11 @@ int main(int argc, char *argv[])
 #endif
 
   /* process switch arguments */
-  while ((c = getopt(argc, argv, "c:hm")) != -1){
+  while ((c = getopt(argc, argv, "b:c:hm")) != -1){
     switch(c){
+    case 'b':
+      bin  = atof(optarg);
+      break;
     case 'c':
       cube = optarg;
       break;
@@ -221,10 +224,10 @@ int main(int argc, char *argv[])
   if( domem ){
     // read and open fits file in memory for reading, go to a useful HDU
     imem = FileContents(ifile, &ilen);
-    fptr = openFITSMem((void **)&imem, &ilen, EXTLIST, &hdutype, &status);
+    fptr = openFITSMem((void **)&imem, &ilen, EXTLIST, NULL, &hdutype, &status);
   } else {
     // open fits file for reading, go to a useful HDU
-    fptr = openFITSFile(ifile, READONLY, EXTLIST, &hdutype, &status);
+    fptr = openFITSFile(ifile, READONLY, EXTLIST, NULL, &hdutype, &status);
   }
   errchk(status);
   fprintf(stdout, "File: %s\n", ifile);
@@ -249,8 +252,9 @@ int main(int argc, char *argv[])
   // process based on hdu type
   switch(hdutype){
   case IMAGE_HDU:
+    fprintf(stdout, "HDU: image\n");
     // get image array
-    buf = getImageToArray(fptr, NULL, NULL, bin, binMode, cube,
+    buf = getImageToArray(fptr, NULL, NULL, bin, binMode, cube, NULL,
 			   start, stop, &bitpix, &status);
     idim1 = stop[0] - start[0] + 1;
     idim2 = stop[1] - start[1] + 1;
@@ -270,6 +274,7 @@ int main(int argc, char *argv[])
     free(buf);
     break;
   default:
+    fprintf(stdout, "HDU: binary table\n");
     // image statistics through a filter
     if( ifilter && *ifilter ){
       tfilter = (char *)strdup(ifilter);
@@ -277,11 +282,11 @@ int main(int argc, char *argv[])
 	  tfilt=(char *)strtok(NULL, ";")){
 	// image from table
 	fprintf(stdout, "Filter: %s\n", tfilt);
-	ofptr = filterTableToImage(fptr, tfilt, colname, dims, NULL, 1, 
+	ofptr = filterTableToImage(fptr, tfilt, colname, dims, NULL, 1, NULL,
 				   &status);
 	errchk(status);
 	// get image array
-	buf = getImageToArray(ofptr, NULL, NULL, bin, binMode, cube,
+	buf = getImageToArray(ofptr, NULL, NULL, bin, binMode, cube, NULL,
 			      start, stop, &bitpix, &status);
 	errchk(status);
 	idim1 = stop[0] - start[0] + 1;
@@ -295,10 +300,11 @@ int main(int argc, char *argv[])
       }
     } else {
       // image from table
-      ofptr = filterTableToImage(fptr, NULL, colname, dims, NULL, 1, &status);
+      ofptr = filterTableToImage(fptr, NULL, colname, dims, NULL, 1, NULL,
+				 &status);
       errchk(status);
       // get image array
-      buf = getImageToArray(ofptr, dims, NULL, bin, binMode, cube,
+      buf = getImageToArray(ofptr, dims, NULL, bin, binMode, cube, NULL,
 			    start, stop, &bitpix, &status);
       errchk(status);
       idim1 = stop[0] - start[0] + 1;

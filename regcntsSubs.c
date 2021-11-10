@@ -210,7 +210,7 @@ void regcntsGetData(Opts opts, Data d){
   char *cube=NULL;
   fitsfile *nfptr=NULL;
   /* open the source FITS file */
-  d->fptr = openFITSFile(d->name, READONLY, EXTLIST, &hdutype, &status);
+  d->fptr = openFITSFile(d->name, READONLY, EXTLIST, NULL, &hdutype, &status);
   regcntsErrchk(opts, status);
   // process based on hdu type
   switch(hdutype){
@@ -239,7 +239,7 @@ void regcntsGetData(Opts opts, Data d){
       if( d->type == SRC || ((d->type == BKG) && d->fromsrc) ){
 	cube = opts->cube;
       }
-      d->data = getImageToArray(d->fptr, NULL, NULL, 1, 0, cube,
+      d->data = getImageToArray(d->fptr, NULL, NULL, 1, 0, cube, NULL,
 				 start, stop, &d->bitpix, &status);
       regcntsErrchk(opts, status);
     }
@@ -257,14 +257,15 @@ void regcntsGetData(Opts opts, Data d){
   default:
     // image from table
     nfptr = filterTableToImage(d->fptr, 
-			       NULL, NULL, NULL, NULL, opts->bin, &status);
+			       NULL, NULL, NULL, NULL, opts->bin, NULL,
+			       &status);
     regcntsErrchk(opts, status);
     // get cards as a string
     getHeaderToString(nfptr, &d->cards, &ncard, &status);
     regcntsErrchk(opts, status);
     if( opts->dodata ){
     // get image array
-      d->data = getImageToArray(nfptr, NULL, NULL, 1, 0, NULL,
+      d->data = getImageToArray(nfptr, NULL, NULL, 1, 0, NULL, NULL,
 				start, stop, &d->bitpix, &status);
       regcntsErrchk(opts, status);
       d->dim1 = stop[0] - start[0] + 1;

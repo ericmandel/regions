@@ -145,14 +145,16 @@ int main(int argc, char **argv){
   if( args <= 0 ){
     regdispUsage(argv[0]);
   }
-  fptr = openFITSFile(argv[optind+0], READONLY, EXTLIST, &hdutype, &status);
+  fptr = openFITSFile(argv[optind+0], READONLY, EXTLIST, NULL,
+		      &hdutype, &status);
   regcntsErrchk(NULL, status);
   if( (x1 == 0) || (y1 == 0) ){
     switch(hdutype){
     case IMAGE_HDU:
       break;
     default:
-      nfptr = filterTableToImage(fptr, NULL, NULL, NULL, NULL, 1, &status);
+      nfptr = filterTableToImage(fptr, NULL, NULL, NULL, NULL, 1, NULL,
+				 &status);
       regcntsErrchk(NULL, status);
       closeFITSFile(fptr, &status);
       regcntsErrchk(NULL, status);
