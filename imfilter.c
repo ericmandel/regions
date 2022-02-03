@@ -18,16 +18,16 @@
 #include "imregions.h"
 #include <emscripten.h>
 #ifndef NSHAPE
-#define NSHAPE EM_ASM_INT({return window.Regions.NSHAPE();})
+#define NSHAPE EM_ASM_INT({return self.Regions.NSHAPE();})
 #endif
 #ifndef FILTSTR
 #define FILTSTR ""
 #endif
 #ifndef FINIT
-#define FINIT EM_ASM({window.Regions.FINIT($0,$1,$2);}, g, x, y)
+#define FINIT EM_ASM({self.Regions.FINIT($0,$1,$2);}, g, x, y)
 #endif
 #ifndef FILTER
-#define FILTER EM_ASM_INT({return window.Regions.FILTER($0,$1,$2);}, g, x, y)
+#define FILTER EM_ASM_INT({return self.Regions.FILTER($0,$1,$2);}, g, x, y)
 #endif
 #endif
 

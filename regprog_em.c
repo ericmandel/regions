@@ -155,12 +155,12 @@ RegionsMask FilterRegions_EM(Regions reg,
   }
   ibuf = _RegionsInitString(reg);
   EM_ASM({
-      if( typeof window.Regions !== 'object' ){
-         window.Regions = {};
+      if( typeof self.Regions !== 'object' ){
+         self.Regions = {};
       }
-      window.Regions.NSHAPE = function(){return $0};
-      window.Regions.FINIT =  new Function('g', 'x', 'y', UTF8ToString($1));
-      window.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + UTF8ToString($2) + ')');
+      self.Regions.NSHAPE = function(){return $0};
+      self.Regions.FINIT =  new Function('g', 'x', 'y', UTF8ToString($1));
+      self.Regions.FILTER = new Function('g', 'x', 'y', 'return (' + UTF8ToString($2) + ')');
   }, reg->nshape, ibuf, reg->filter);
   if( ibuf ) free(ibuf);
   // call the real filter routine
