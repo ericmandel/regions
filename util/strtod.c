@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <conf.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -7,10 +10,7 @@ double strtod();
 
 int SAOdtype=0;
 
-double	SAOstrtod(str, ptr)
-	char	 *str;
-	char	**ptr;
-{
+double	SAOstrtod(char *str, char **ptr){
 	double	 d = 0.0;
 	double	 m = 0.0;
 	double	 s = 0.0;
@@ -78,12 +78,7 @@ double	SAOstrtod(str, ptr)
 	return d;
 }
 
-char *SAOconvert(buff, val, type, prec)
-	char	*buff;
-	double	 val;
-	int	 type;
-	int	 prec;
-{
+char *SAOconvert(char *buff, double val, int type, int prec){
                 char    fmt[32];
                 char   *sign = "";
  
