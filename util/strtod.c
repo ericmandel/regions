@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-double strtod();
 #include <math.h>
 
 int SAOdtype=0;
@@ -66,7 +65,7 @@ double	SAOstrtod(char *str, char **ptr){
  
             return sign * (d + m / 60 + s / 3600);
         } else if( (c = **ptr) &&
-		   (c == 'd' || c == 'r' || c == '\'' || c == '"') && 
+		   (c == 'd' || c == 'r' || c == '\'' || c == '"') &&
 		   ((*((*ptr)+1)) == '\0') ){
 	  SAOdtype = c;
 	  (*ptr)++;
