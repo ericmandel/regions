@@ -199,7 +199,7 @@ lib:		$(LIBS)
 emlib:		$(EMLIBS)
 
 libregions.a:	$(LIBOBJS) $(INCS) $(INCP)
-		$(AR) cruv $@ $?
+		$(AR) cruv $@ $(LIBOBJS)
 		$(RANLIB) $@
 
 libregions_em.a:$(EMLIBOBJS) $(INCS) $(INCP)
